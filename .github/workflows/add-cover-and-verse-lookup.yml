@@ -1,0 +1,68 @@
+name: Add publication covers and verse lookup
+on:
+  push:
+    paths:
+      - '.github/workflows/add-cover-and-verse-lookup.yml'
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update JW Assistant
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+
+          css_old='.shortcutremove{border:0;border-radius:7px;padding:7px;background:#eee}.actions{padding:0 16px 12px}'
+          css_new=''' .shortcutremove{border:0;border-radius:7px;padding:7px;background:#eee}.pubshortcutopen{flex:1;border:0;background:transparent;text-align:left;padding:0}.pubshortcutimg{display:block;width:92px;max-height:138px;object-fit:contain;border-radius:6px;box-shadow:0 2px 8px #0002}.verselookup{margin-top:10px;padding-top:10px;border-top:1px solid #eee}.lookupgrid{display:grid;grid-template-columns:1.6fr .8fr .8fr;gap:7px;margin-top:8px}.lookupgrid select{width:100%;padding:10px 7px;border:1px solid #ccd3d9;border-radius:8px;font-size:15px;background:#fff}.lookuppreview{display:none;margin-top:10px;padding:11px;background:#f5f7f9;border-radius:8px;font:17px/1.45 Georgia,serif}.lookuppreview.on{display:block}.lookupactions{display:flex;gap:8px;margin-top:9px}.actions{padding:0 16px 12px}'''
+          if css_old not in s: raise SystemExit('CSS anchor not found')
+          s=s.replace(css_old,css_new,1)
+
+          home_old='<div class="form"><input id="verseInput" placeholder="Example: John 3:16"><button class="btn" onclick="addVerse()">Add</button></div><div id="verseList"></div>'
+          home_new='''<div class="form"><input id="verseInput" placeholder="Example: John 3:16"><button class="btn" onclick="addVerse()">Add</button></div><div class="verselookup"><button class="btn" onclick="toggleVerseLookup()">Look Up a Verse</button><div id="verseLookupBox" style="display:none"><div class="lookupgrid"><select id="lookupBook"></select><select id="lookupChapter"></select><select id="lookupVerse"></select></div><div class="lookupactions"><button class="btn" onclick="previewLookupVerse()">Look Up</button><button class="btn" onclick="addLookupVerse()">Add to Home</button></div><div id="lookupPreview" class="lookuppreview"></div></div></div><div id="verseList"></div>'''
+          if home_old not in s: raise SystemExit('Home verse anchor not found')
+          s=s.replace(home_old,home_new,1)
+
+          old_func="""function loadPubShortcuts(){const ids=JSON.parse(localStorage.getItem('pubShortcuts')||'[]');pubShortcutList.innerHTML='';ids.forEach((id,i)=>{const p=PUBS[id];if(!p)return;const r=document.createElement('div');r.className='shortcutrow';r.innerHTML='<button class=\"shortcutopen\">'+p.title.replace(/</g,'&lt;')+'</button><button class=\"shortcutremove\">Remove</button>';r.children[0].onclick=()=>openPub(id);r.children[1].onclick=()=>{ids.splice(i,1);localStorage.setItem('pubShortcuts',JSON.stringify(ids));loadPubShortcuts()};pubShortcutList.appendChild(r)})}"""
+          new_func="""function loadPubShortcuts(){const ids=JSON.parse(localStorage.getItem('pubShortcuts')||'[]');pubShortcutList.innerHTML='';ids.forEach((id,i)=>{const p=PUBS[id];if(!p)return;const r=document.createElement('div');r.className='shortcutrow';const o=document.createElement('button');o.className='pubshortcutopen';o.setAttribute('aria-label','Open '+p.title);if(pubCoverUrls[id]){const img=document.createElement('img');img.className='pubshortcutimg';img.src=pubCoverUrls[id];img.alt=p.title+' cover';o.appendChild(img)}else{o.textContent=p.title}o.onclick=()=>openPub(id);const x=document.createElement('button');x.className='shortcutremove';x.textContent='Remove';x.onclick=()=>{ids.splice(i,1);localStorage.setItem('pubShortcuts',JSON.stringify(ids));loadPubShortcuts()};r.append(o,x);pubShortcutList.appendChild(r)})}"""
+          if old_func not in s: raise SystemExit('Publication shortcut function anchor not found')
+          s=s.replace(old_func,new_func,1)
+
+          js_anchor="async function addVerse(){const ref=verseInput.value.trim();if(!ref)return;try{const v=await verseData(ref),a=JSON.parse(localStorage.getItem('quickVerses')||'[]');a.push(v);localStorage.setItem('quickVerses',JSON.stringify(a));verseInput.value='';await loadVerses()}catch(e){alert(e.message)}}"
+          lookup_js=r'''async function addVerse(){const ref=verseInput.value.trim();if(!ref)return;try{const v=await verseData(ref),a=JSON.parse(localStorage.getItem('quickVerses')||'[]');a.push(v);localStorage.setItem('quickVerses',JSON.stringify(a));verseInput.value='';await loadVerses()}catch(e){alert(e.message)}}let lookupCurrent=null;function toggleVerseLookup(){const b=document.getElementById('verseLookupBox');b.style.display=b.style.display==='none'?'block':'none'}async function initVerseLookup(){const bs=document.getElementById('lookupBook');if(!bs)return;bs.innerHTML='';BOOKS.forEach((b,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=b.full;bs.appendChild(o)});bs.onchange=lookupBookChanged;document.getElementById('lookupChapter').onchange=lookupChapterChanged;await lookupBookChanged()}async function lookupBookChanged(){const b=BOOKS[Number(document.getElementById('lookupBook').value)||0],cs=document.getElementById('lookupChapter');cs.innerHTML='';try{if(/biblechapternav/i.test(b.href)){const nav=await fileText(b.href),d=new DOMParser().parseFromString(nav,'application/xhtml+xml'),links=[...d.querySelectorAll('a[href]')].filter(a=>/^\d+$/.test(a.textContent.trim()));links.forEach(a=>{const o=document.createElement('option');o.value=a.textContent.trim();o.textContent=a.textContent.trim();cs.appendChild(o)})}else{const o=document.createElement('option');o.value='1';o.textContent='1';cs.appendChild(o)}await lookupChapterChanged()}catch(e){alert(e.message)}}async function lookupChapterChanged(){const b=BOOKS[Number(document.getElementById('lookupBook').value)||0],ch=Number(document.getElementById('lookupChapter').value)||1,vs=document.getElementById('lookupVerse');vs.innerHTML='';try{let href=b.href;if(/biblechapternav/i.test(href)){const nav=await fileText(href),d=new DOMParser().parseFromString(nav,'application/xhtml+xml'),a=[...d.querySelectorAll('a[href]')].find(x=>Number(x.textContent.trim())===ch);if(!a)throw Error('Chapter not found.');href=a.getAttribute('href')}const html=await fileText(href),d=new DOMParser().parseFromString(html,'text/html'),marks=[...d.querySelectorAll('[id^="chapter'+ch+'_verse"]')];const nums=[...new Set(marks.map(x=>Number((x.id.match(/_verse(\d+)/)||[])[1])).filter(Boolean))].sort((a,b)=>a-b);nums.forEach(n=>{const o=document.createElement('option');o.value=String(n);o.textContent=String(n);vs.appendChild(o)})}catch(e){alert(e.message)}}async function previewLookupVerse(){try{const b=BOOKS[Number(document.getElementById('lookupBook').value)||0],ch=document.getElementById('lookupChapter').value,v=document.getElementById('lookupVerse').value;lookupCurrent=await verseData(b.full+' '+ch+':'+v);const box=document.getElementById('lookupPreview');box.textContent=lookupCurrent.ref+' — '+lookupCurrent.text;box.classList.add('on')}catch(e){alert(e.message)}}async function addLookupVerse(){try{if(!lookupCurrent)await previewLookupVerse();if(!lookupCurrent)return;const a=JSON.parse(localStorage.getItem('quickVerses')||'[]');a.push(lookupCurrent);localStorage.setItem('quickVerses',JSON.stringify(a));await loadVerses();alert('Verse added to Home.')}catch(e){alert(e.message)}}'''
+          if js_anchor not in s: raise SystemExit('Verse JS anchor not found')
+          s=s.replace(js_anchor,lookup_js,1)
+
+          startup_old='renderBooks();loadPubShortcuts();(async()=>{'
+          startup_new='renderBooks();loadPubShortcuts();initVerseLookup();(async()=>{'
+          if startup_old not in s: raise SystemExit('Startup anchor not found')
+          s=s.replace(startup_old,startup_new,1)
+
+          cover_old="if(b)await loadPubCover(id,b)"
+          cover_new="if(b){await loadPubCover(id,b);loadPubShortcuts()}"
+          if cover_old not in s: raise SystemExit('Cover refresh anchor not found')
+          s=s.replace(cover_old,cover_new,1)
+
+          p.write_text(s)
+          PY
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text()
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S|re.I)
+          inline='\n'.join(x for x in scripts if x.strip())
+          Path('/tmp/index-inline.js').write_text(inline)
+          print('inline chars',len(inline))
+          PY
+          node --check /tmp/index-inline.js
+      - name: Commit update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Show publication covers and add Bible verse lookup"
+          git push
