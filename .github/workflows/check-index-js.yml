@@ -1,0 +1,24 @@
+name: Check index JavaScript
+on:
+  push:
+    paths:
+      - '.github/workflows/check-index-js.yml'
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract and syntax-check inline JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text()
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S|re.I)
+          inline='\n'.join(x for x in scripts if x.strip())
+          Path('/tmp/index-inline.js').write_text(inline)
+          print('inline chars',len(inline))
+          PY
+          node --check /tmp/index-inline.js
