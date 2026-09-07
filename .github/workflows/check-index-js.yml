@@ -1,24 +1,37 @@
-name: Check index JavaScript
+name: Fix and check index JavaScript
 on:
   push:
     paths:
       - '.github/workflows/check-index-js.yml'
 permissions:
-  contents: read
+  contents: write
 jobs:
-  check:
+  fix:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Extract and syntax-check inline JavaScript
+      - name: Fix missing brace in Home shortcut code
         run: |
           python - <<'PY'
           from pathlib import Path
           import re
-          s=Path('index.html').read_text()
-          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S|re.I)
+          p=Path('index.html')
+          s=p.read_text()
+          old="catch(e){v={ref:v,text:'Bible verse will load after the Bible EPUB is installed.'}}const r=document.createElement('div')"
+          new="catch(e){v={ref:v,text:'Bible verse will load after the Bible EPUB is installed.'}}}const r=document.createElement('div')"
+          if old not in s:
+              raise SystemExit('Expected broken shortcut code not found')
+          s=s.replace(old,new,1)
+          p.write_text(s)
+          scripts=re.findall(r'<script(?:\\s[^>]*)?>(.*?)</script>',s,re.S|re.I)
           inline='\n'.join(x for x in scripts if x.strip())
           Path('/tmp/index-inline.js').write_text(inline)
-          print('inline chars',len(inline))
           PY
           node --check /tmp/index-inline.js
+      - name: Commit fixed app
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Restore Home Bible verse and publication buttons"
+          git push
