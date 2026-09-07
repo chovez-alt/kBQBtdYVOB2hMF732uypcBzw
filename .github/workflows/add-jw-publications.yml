@@ -1,0 +1,41 @@
+name: Add JW.org Publications Hub
+
+on:
+  push:
+    paths:
+      - '.github/workflows/add-jw-publications.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update Publications tab
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          old='<section id="Library" class="view"><h2 class="title">Publications</h2>'
+          new='''<section id="Library" class="view"><h2 class="title">Publications</h2><div class="card"><h3>All JW.org Books</h3><p>JW.org currently lists 124 English books. Use the official download page so files go directly from JW.org to your iPhone.</p><div class="pubactions"><button class="btn" onclick="openOfficialBooks()">Browse All 124 Books</button><button class="btn" onclick="openOfficialDownloads()">Official Downloads</button></div><div class="pubstatus">Downloads come directly from JW.org and can be saved for offline use on this device.</div></div>'''
+          if old not in s:
+              raise SystemExit('Library section marker not found')
+          s=s.replace(old,new,1)
+          marker='function loadPubShortcuts()'
+          js="function openOfficialBooks(){window.open('https://www.jw.org/en/library/books/','_blank')}function openOfficialDownloads(){window.open('https://www.jw.org/en/library/books/','_blank')}"
+          if js not in s:
+              s=s.replace(marker,js+marker,1)
+          p.write_text(s)
+          PY
+      - name: Commit update
+        run: |
+          git config user.name "JW Assistant Updater"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Add official JW.org publications hub"
+          git push
