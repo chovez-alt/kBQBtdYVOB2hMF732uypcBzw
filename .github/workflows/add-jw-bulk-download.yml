@@ -1,0 +1,40 @@
+name: Add JW bulk download helper
+
+on:
+  push:
+    paths:
+      - '.github/workflows/add-jw-bulk-download.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add Download All helper
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          old='<button class="btn" onclick="openOfficialBooks()">Browse All 124 Books</button><button class="btn" onclick="openOfficialDownloads()">Official Downloads</button>'
+          new='<button class="btn" onclick="downloadAllBooks()">Download All 124 Books</button><button class="btn" onclick="openOfficialBooks()">Browse All 124 Books</button>'
+          if old in s:
+              s=s.replace(old,new,1)
+          marker="function openOfficialBooks(){window.open('https://www.jw.org/en/library/books/','_blank')}"
+          helper="""function downloadAllBooks(){const starts=[0,12,24,36,48,60,72,84,96,108,120];let i=0;const status=document.querySelector('#Library .card .pubstatus');function next(){if(i>=starts.length){if(status)status.textContent='All 11 JW.org book catalog pages were opened. iPhone may require you to confirm individual file downloads.';return}const u='https://www.jw.org/en/library/books/?start='+starts[i];if(status)status.textContent='Opening book catalog page '+(i+1)+' of '+starts.length+'…';const w=window.open(u,'_blank');i++;if(!w){if(status)status.textContent='iPhone blocked additional windows. Allow pop-ups for JW Assistant, then tap Download All again.';return}setTimeout(next,700)}next()}"""
+          if helper not in s:
+              s=s.replace(marker,helper+marker,1)
+          p.write_text(s)
+          PY
+      - name: Commit update
+        run: |
+          git config user.name "JW Assistant Updater"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Add Download All books helper"
+          git push
