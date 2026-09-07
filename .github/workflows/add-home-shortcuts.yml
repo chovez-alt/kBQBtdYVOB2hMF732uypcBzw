@@ -1,0 +1,37 @@
+name: Add home shortcuts
+on:
+  push:
+    paths:
+      - '.github/workflows/add-home-shortcuts.yml'
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add shortcut UI
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          s=s.replace('.quickdel{border:0;border-radius:7px;padding:7px;background:#eee}', '.quickdel{border:0;border-radius:7px;padding:7px;background:#eee}.shortcutadd{display:flex;gap:8px;align-items:center;margin-bottom:10px}.shortcutadd select,.shortcutadd input{flex:1;min-width:0;padding:11px;border:1px solid #ccd3d9;border-radius:8px;font-size:16px}.shortcutrow{display:flex;align-items:center;gap:8px;border-top:1px solid #eee;padding:9px 0}.shortcutopen{flex:1;border:0;background:transparent;text-align:left;color:#1c56b3;font-weight:700}.shortcutremove{border:0;border-radius:7px;padding:7px;background:#eee}')
+          old='<section id="Home" class="view"><h2 class="title">JW Assistant</h2><div class="card"><h3>Quick Verses</h3><div class="form"><input id="verseInput" placeholder="Example: John 3:16"><button class="btn" onclick="addVerse()">Add</button></div><div id="verseList"></div></div><div class="card"><h3>Publications</h3><button class="btn" onclick="document.getElementById(\'tLib\').checked=true">Open Publications</button><input id="pubFile" class="file" type="file" accept=".epub,application/epub+zip"></div></section>'
+          new='<section id="Home" class="view"><h2 class="title">JW Assistant</h2><div class="card"><h3>Bible Verse Shortcuts</h3><div class="form"><input id="verseInput" placeholder="Example: John 3:16"><button class="btn" onclick="addVerse()">Add</button></div><div id="verseList"></div></div><div class="card"><h3>Publication Shortcuts</h3><div class="shortcutadd"><select id="pubShortcutSelect"><option value="lff">Enjoy Life Forever!</option><option value="lffi">Enjoy Life Forever!—Brochure</option></select><button class="btn" onclick="addPubShortcut()">Add</button></div><div id="pubShortcutList"></div><button class="btn" onclick="document.getElementById(\'tLib\').checked=true" style="margin-top:10px">Open Publications</button><input id="pubFile" class="file" type="file" accept=".epub,application/epub+zip"></div></section>'
+          if old not in s: raise SystemExit('home pattern not found')
+          s=s.replace(old,new)
+          marker="function addVerse(){const v=verseInput.value.trim();if(!v)return;const a=JSON.parse(localStorage.getItem('quickVerses')||'[]');a.push(v);localStorage.setItem('quickVerses',JSON.stringify(a));verseInput.value='';loadVerses()}"
+          extra=marker+"function loadPubShortcuts(){const ids=JSON.parse(localStorage.getItem('pubShortcuts')||'[]');pubShortcutList.innerHTML='';ids.forEach((id,i)=>{const p=PUBS[id];if(!p)return;const r=document.createElement('div');r.className='shortcutrow';r.innerHTML='<button class=\"shortcutopen\">'+p.title.replace(/</g,'&lt;')+'</button><button class=\"shortcutremove\">Remove</button>';r.children[0].onclick=()=>openPub(id);r.children[1].onclick=()=>{ids.splice(i,1);localStorage.setItem('pubShortcuts',JSON.stringify(ids));loadPubShortcuts()};pubShortcutList.appendChild(r)})}async function addPubShortcut(){const id=pubShortcutSelect.value,p=PUBS[id];if(!p)return;const installed=await get(p.key);if(!installed){alert('Install this publication first.');document.getElementById('tLib').checked=true;return}const ids=JSON.parse(localStorage.getItem('pubShortcuts')||'[]');ids.push(id);localStorage.setItem('pubShortcuts',JSON.stringify(ids));loadPubShortcuts()}"
+          if marker not in s: raise SystemExit('verse pattern not found')
+          s=s.replace(marker,extra)
+          s=s.replace('renderBooks();loadVerses();(async()=>{','renderBooks();loadVerses();loadPubShortcuts();(async()=>{')
+          p.write_text(s)
+          PY
+      - name: Commit changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Add multiple home shortcuts for publications and Bible verses'
+          git push
