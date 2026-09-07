@@ -1,0 +1,38 @@
+name: Patch Bible verse shortcuts
+
+on:
+  push:
+    paths:
+      - '.github/workflows/patch-verse-shortcuts.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch index.html
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          s=p.read_text()
+          if '.versetext{' not in s:
+              s=s.replace('.quickopen{flex:1;border:0;background:transparent;text-align:left;color:#1c56b3;font-weight:700}.quickdel', '.quickopen{flex:1;border:0;background:transparent;text-align:left;color:#1c56b3;font-weight:700}.versetext{display:block;color:#30343a;font-weight:400;font-family:Georgia,serif;line-height:1.35;margin-top:4px}.quickdel')
+          new=r'''function normalizeBookName(s){return(s||'').toLowerCase().replace(/[^a-z0-9]/g,'')}function parseVerseRef(ref){const m=(ref||'').trim().match(/^(.+?)\s+(\d+)\s*:\s*(\d+)$/);if(!m)throw Error('Type a verse like John 3:16.');const key=normalizeBookName(m[1]);const b=BOOKS.find(x=>normalizeBookName(x.full)===key||normalizeBookName(x.abbr)===key);if(!b)throw Error('Bible book not found.');return{b,chapter:Number(m[2]),verse:Number(m[3]),ref:b.full+' '+Number(m[2])+':'+Number(m[3])}}async function verseData(ref){const q=parseVerseRef(ref);let href=q.b.href;if(/biblechapternav/i.test(href)){const nav=await fileText(href),d=new DOMParser().parseFromString(nav,'application/xhtml+xml');const a=[...d.querySelectorAll('a[href]')].find(x=>Number(x.textContent.trim())===q.chapter);if(!a)throw Error('Chapter not found.');href=a.getAttribute('href')}else if(q.chapter!==1)throw Error('This book has one chapter.');const html=await fileText(href),d=new DOMParser().parseFromString(html,'text/html'),mark=d.getElementById('chapter'+q.chapter+'_verse'+q.verse);if(!mark)throw Error('Verse not found.');const para=mark.closest('p')||mark.parentElement;let text='',started=false;for(const n of para.childNodes){if(n===mark){started=true;continue}if(!started)continue;if(n.nodeType===1&&n.matches&&n.matches('span[id^="chapter"][id*="_verse"]'))break;text+=n.textContent||''}text=text.replace(/^\s*\d+\s*/,'').trim();return{ref:q.ref,text,book:q.b.full,chapter:q.chapter,verse:q.verse,href}}async function openVerseShortcut(v){try{const data=typeof v==='string'?await verseData(v):v;const b=BOOKS.find(x=>x.full===data.book)||parseVerseRef(data.ref).b;await openChapter(b,data.href,data.chapter);setTimeout(()=>{const mark=document.querySelector('#readerBody #chapter'+data.chapter+'_verse'+data.verse);if(mark){const para=mark.closest('p')||mark.parentElement;para.style.background='#fff3a8';para.style.borderRadius='6px';para.style.padding='6px';para.scrollIntoView({behavior:'smooth',block:'center'})}},80)}catch(e){alert(e.message)}}async function loadVerses(){const a=JSON.parse(localStorage.getItem('quickVerses')||'[]');verseList.innerHTML='';let changed=false;for(let i=0;i<a.length;i++){let v=a[i];if(typeof v==='string'){try{v=await verseData(v);a[i]=v;changed=true}catch(e){v={ref:v,text:'Tap to open Bible'}}const r=document.createElement('div');r.className='quickrow';const o=document.createElement('button');o.className='quickopen';const ref=document.createElement('strong');ref.textContent=v.ref||'';const txt=document.createElement('span');txt.className='versetext';txt.textContent=v.text||'';o.append(ref,txt);o.onclick=()=>openVerseShortcut(v);const x=document.createElement('button');x.className='quickdel';x.textContent='Remove';x.onclick=()=>{const z=JSON.parse(localStorage.getItem('quickVerses')||'[]');z.splice(i,1);localStorage.setItem('quickVerses',JSON.stringify(z));loadVerses()};r.append(o,x);verseList.appendChild(r)}if(changed)localStorage.setItem('quickVerses',JSON.stringify(a))}async function addVerse(){const ref=verseInput.value.trim();if(!ref)return;try{const v=await verseData(ref),a=JSON.parse(localStorage.getItem('quickVerses')||'[]');a.push(v);localStorage.setItem('quickVerses',JSON.stringify(a));verseInput.value='';await loadVerses()}catch(e){alert(e.message)}}'''
+          pat=r'function loadVerses\(\)\{.*?\}function addVerse\(\)\{.*?\}(?=function loadPubShortcuts)'
+          s2,n=re.subn(pat,new,s,count=1)
+          if n!=1:
+              raise SystemExit('Could not locate verse shortcut block')
+          p.write_text(s2)
+          PY
+      - name: Commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Make Bible verse shortcuts open exact verse and show text"
+          git push
