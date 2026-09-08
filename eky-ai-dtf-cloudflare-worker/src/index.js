@@ -1,5 +1,5 @@
 const GENERATE_MODEL = '@cf/black-forest-labs/flux-1-schnell';
-const EDIT_MODEL = '@cf/stabilityai/stable-diffusion-xl-base-1.0';
+const EDIT_MODEL = '@cf/black-forest-labs/flux-2-klein-4b';
 
 const allowedOrigins = new Set([
   'https://eky-ai-dtf-studio.vercel.app',
@@ -18,34 +18,22 @@ function cors(origin) {
 function json(data, status = 200, origin = '') {
   return new Response(JSON.stringify(data), {
     status,
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-      ...cors(origin)
-    }
+    headers: { 'Content-Type': 'application/json; charset=utf-8', ...cors(origin) }
   });
 }
 
-function stripDataUrl(value) {
+function parseDataUrl(value) {
   const input = String(value || '');
-  const comma = input.indexOf(',');
-  return input.startsWith('data:') && comma >= 0 ? input.slice(comma + 1) : input;
+  const m = input.match(/^data:([^;]+);base64,(.+)$/);
+  if (!m) throw new Error('Invalid uploaded image.');
+  return { type: m[1] || 'image/jpeg', base64: m[2] };
 }
 
-function base64ToByteArray(base64) {
+function base64ToBlob(base64, type) {
   const binary = atob(base64);
-  const bytes = new Array(binary.length);
+  const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return bytes;
-}
-
-function bytesToBase64(buffer) {
-  const bytes = new Uint8Array(buffer);
-  let binary = '';
-  const chunk = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
-  }
-  return btoa(binary);
+  return new Blob([bytes], { type });
 }
 
 export default {
@@ -53,19 +41,10 @@ export default {
     const origin = request.headers.get('Origin') || '';
     const url = new URL(request.url);
 
-    if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: cors(origin) });
-    }
+    if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(origin) });
 
     if (request.method === 'GET' && (url.pathname === '/' || url.pathname === '/health')) {
-      return json({
-        ok: true,
-        service: 'EKY AI DTF Studio Cloudflare Worker',
-        provider: 'Cloudflare Workers AI',
-        generateModel: GENERATE_MODEL,
-        editModel: EDIT_MODEL,
-        editing: true
-      }, 200, origin);
+      return json({ ok: true, service: 'EKY AI DTF Studio Cloudflare Worker', provider: 'Cloudflare Workers AI', generateModel: GENERATE_MODEL, editModel: EDIT_MODEL, editing: true }, 200, origin);
     }
 
     if (request.method === 'POST' && url.pathname === '/generate') {
@@ -73,29 +52,11 @@ export default {
         const body = await request.json();
         const prompt = String(body?.prompt || '').trim();
         if (!prompt) return json({ error: 'Prompt required.' }, 400, origin);
-
         const steps = Math.max(1, Math.min(Number(body?.steps) || 4, 8));
-        const seed = Number.isInteger(body?.seed)
-          ? body.seed
-          : Math.floor(Math.random() * 2147483647);
-
-        const result = await env.AI.run(GENERATE_MODEL, {
-          prompt: prompt.slice(0, 2048),
-          steps,
-          seed
-        });
-
-        if (!result?.image) {
-          return json({ error: 'Cloudflare AI returned no image.' }, 502, origin);
-        }
-
-        return json({
-          image: { base64: result.image, mediaType: 'image/jpeg' },
-          model: GENERATE_MODEL,
-          provider: 'cloudflare',
-          seed,
-          steps
-        }, 200, origin);
+        const seed = Number.isInteger(body?.seed) ? body.seed : Math.floor(Math.random() * 2147483647);
+        const result = await env.AI.run(GENERATE_MODEL, { prompt: prompt.slice(0, 2048), steps, seed });
+        if (!result?.image) return json({ error: 'Cloudflare AI returned no image.' }, 502, origin);
+        return json({ image: { base64: result.image, mediaType: 'image/jpeg' }, model: GENERATE_MODEL, provider: 'cloudflare', seed, steps }, 200, origin);
       } catch (error) {
         console.error(error);
         return json({ error: error instanceof Error ? error.message : 'Generation failed.' }, 500, origin);
@@ -106,39 +67,30 @@ export default {
       try {
         const body = await request.json();
         const prompt = String(body?.prompt || '').trim();
-        const imageB64 = stripDataUrl(body?.image);
-        if (!prompt || !imageB64) {
-          return json({ error: 'Upload an image and describe the change.' }, 400, origin);
-        }
+        if (!prompt || !body?.image) return json({ error: 'Upload an image and describe the change.' }, 400, origin);
 
-        const strength = Math.max(0.15, Math.min(Number(body?.strength) || 0.58, 0.95));
-        const seed = Number.isInteger(body?.seed)
-          ? body.seed
-          : Math.floor(Math.random() * 2147483647);
-        const imageBytes = base64ToByteArray(imageB64);
+        const parsed = parseDataUrl(body.image);
+        const imageBlob = base64ToBlob(parsed.base64, parsed.type);
+        const seed = Number.isInteger(body?.seed) ? body.seed : Math.floor(Math.random() * 2147483647);
 
+        const form = new FormData();
+        form.append('prompt', `${prompt.slice(0, 1400)}. Use the uploaded image as the main reference. Preserve the subject identity and composition unless the requested edit requires changing them. Clean professional DTF-print-ready result.`);
+        form.append('input_image_0', imageBlob, 'reference.png');
+        form.append('width', '1024');
+        form.append('height', '1024');
+        form.append('guidance', '3.5');
+        form.append('seed', String(seed));
+
+        const formResponse = new Response(form);
         const result = await env.AI.run(EDIT_MODEL, {
-          prompt: `${prompt.slice(0, 1400)}. Preserve the original subject, composition and important details unless the requested change requires altering them. Professional clean DTF-print-ready result, sharp edges, no shirt mockup.`,
-          negative_prompt: 'blurry, distorted, deformed, duplicate subject, extra limbs, watermark, unreadable text, low quality',
-          image: imageBytes,
-          num_steps: 20,
-          strength,
-          guidance: 7.5,
-          seed
+          multipart: {
+            body: formResponse.body,
+            contentType: formResponse.headers.get('content-type')
+          }
         });
 
-        const buffer = await new Response(result).arrayBuffer();
-        if (!buffer.byteLength) {
-          return json({ error: 'Cloudflare AI returned no edited image.' }, 502, origin);
-        }
-
-        return json({
-          image: { base64: bytesToBase64(buffer), mediaType: 'image/png' },
-          model: EDIT_MODEL,
-          provider: 'cloudflare',
-          seed,
-          strength
-        }, 200, origin);
+        if (!result?.image) return json({ error: 'Cloudflare FLUX.2 returned no edited image.' }, 502, origin);
+        return json({ image: { base64: result.image, mediaType: 'image/jpeg' }, model: EDIT_MODEL, provider: 'cloudflare', seed }, 200, origin);
       } catch (error) {
         console.error(error);
         return json({ error: error instanceof Error ? error.message : 'Image edit failed.' }, 500, origin);
