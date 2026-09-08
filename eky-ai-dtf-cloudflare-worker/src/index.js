@@ -31,6 +31,13 @@ function stripDataUrl(value) {
   return input.startsWith('data:') && comma >= 0 ? input.slice(comma + 1) : input;
 }
 
+function base64ToByteArray(base64) {
+  const binary = atob(base64);
+  const bytes = new Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
 function bytesToBase64(buffer) {
   const bytes = new Uint8Array(buffer);
   let binary = '';
@@ -108,11 +115,12 @@ export default {
         const seed = Number.isInteger(body?.seed)
           ? body.seed
           : Math.floor(Math.random() * 2147483647);
+        const imageBytes = base64ToByteArray(imageB64);
 
         const result = await env.AI.run(EDIT_MODEL, {
           prompt: `${prompt.slice(0, 1400)}. Preserve the original subject, composition and important details unless the requested change requires altering them. Professional clean DTF-print-ready result, sharp edges, no shirt mockup.`,
           negative_prompt: 'blurry, distorted, deformed, duplicate subject, extra limbs, watermark, unreadable text, low quality',
-          image_b64: imageB64,
+          image: imageBytes,
           num_steps: 20,
           strength,
           guidance: 7.5,
