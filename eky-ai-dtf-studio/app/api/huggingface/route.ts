@@ -26,7 +26,7 @@ export async function POST(req: Request) {
       result = await client.textToImage({
         model: 'black-forest-labs/FLUX.1-schnell',
         inputs: prompt.trim(),
-      });
+      }, { outputType: 'blob' });
     }
     const mediaType = result.type || 'image/png';
     const base64 = Buffer.from(await result.arrayBuffer()).toString('base64');
