@@ -11,25 +11,25 @@ export async function POST(req: Request) {
     if (!prompt?.trim()) return Response.json({ error: 'Prompt is required.' }, { status: 400 });
 
     const client = new InferenceClient(token);
-    let blob: Blob;
+    let result: Blob;
     if (image) {
       const m = String(image).match(/^data:([^;]+);base64,(.+)$/);
       if (!m) return Response.json({ error: 'Invalid reference image.' }, { status: 400 });
       const bytes = Uint8Array.from(Buffer.from(m[2], 'base64'));
       const input = new Blob([bytes], { type: m[1] });
-      blob = await client.imageToImage({
+      result = await client.imageToImage({
         model: 'black-forest-labs/FLUX.1-Kontext-dev',
         inputs: input,
         parameters: { prompt: prompt.trim() }
-      } as any);
+      });
     } else {
-      blob = await client.textToImage({
+      result = await client.textToImage({
         model: 'black-forest-labs/FLUX.1-schnell',
         inputs: prompt.trim(),
       });
     }
-    const mediaType = blob.type || 'image/png';
-    const base64 = Buffer.from(await blob.arrayBuffer()).toString('base64');
+    const mediaType = result.type || 'image/png';
+    const base64 = Buffer.from(await result.arrayBuffer()).toString('base64');
     return Response.json({ image: { base64, mediaType }, provider: 'huggingface' });
   } catch (e: any) {
     return Response.json({ error: e?.message || 'Hugging Face image request failed.' }, { status: 500 });
