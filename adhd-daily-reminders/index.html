@@ -26,13 +26,14 @@
 <div class="card"><div class="sectionTitle"><h2 id="dailyListTitle">Today’s list</h2><span class="count" id="taskCount"></span></div><div class="row"><input class="input" id="taskInput" placeholder="What needs done?" autocomplete="off"><button class="primary" id="addTask">Add</button></div><div class="scheduleGrid"><div class="field"><label>Date (optional)</label><input class="input" type="date" id="taskDate"></div><div class="field"><label>Time (optional)</label><input class="input" type="time" id="taskTime"></div></div><div class="hint" style="text-align:left;margin-top:-3px">Leave both blank and it goes on today.</div><div class="list" id="taskList" style="margin-top:12px"></div><div id="completedWrap" style="display:none;margin-top:22px;padding-top:18px;border-top:1px solid var(--line)"><div class="sectionTitle"><h2 style="font-size:1rem">Completed Tasks</h2><span class="count" id="completedCount"></span></div><div class="list" id="completedList"></div></div></div>
 </section>
 
-<section class="panel" id="speakPanel">
+<section class="panel" id="notesPanel">
 <div class="card"><div class="eyebrow">Quick capture</div><h2 style="margin:5px 0 15px">Say it before you forget it</h2><button class="voice" data-voice-target="note">🎙️ Tap to speak a note</button><p class="hint" id="speechHint">Your words will be saved and shown on your daily list.</p><div class="scheduleGrid"><div class="field"><label>Date (optional)</label><input class="input" type="date" id="noteDate"></div><div class="field"><label>Time (optional)</label><input class="input" type="time" id="noteTime"></div></div><div class="hint" style="text-align:left;margin-top:-3px">Leave both blank and it goes on today.</div></div>
 <div class="card"><div class="sectionTitle"><h2>Or type a note</h2></div><textarea id="noteInput" rows="5" placeholder="Write anything you want to remember..."></textarea><button class="primary" id="saveNote" style="width:100%;margin-top:10px">Save Note</button></div>
+<div class="card"><div class="sectionTitle"><h2>My notes</h2><span class="count" id="noteCount"></span></div><div class="list" id="noteList"></div></div>
 </section>
 
-<section class="panel" id="notesPanel">
-<div class="card"><div class="sectionTitle"><h2>My notes</h2><span class="count" id="noteCount"></span></div><div class="list" id="noteList"></div></div>
+<section class="panel" id="completedPanel">
+<div class="card"><div class="sectionTitle"><h2>Completed Tasks</h2><span class="count" id="allCompletedCount"></span></div><p class="hint" style="text-align:left;margin-top:-4px;margin-bottom:14px">Anything you check off is saved here. You can put it back on your to-do list anytime.</p><div class="list" id="allCompletedList"></div></div>
 </section>
 
 <section class="panel" id="remindersPanel">
@@ -43,8 +44,8 @@
 
 <nav class="tabs"><div class="tabInner">
 <button class="tab active" data-panel="todayPanel"><span>✓</span>Today</button>
-<button class="tab" data-panel="speakPanel"><span>🎙️</span>Speak</button>
 <button class="tab" data-panel="notesPanel"><span>📝</span>Notes</button>
+<button class="tab" data-panel="completedPanel"><span>↩</span>Completed</button>
 <button class="tab" data-panel="remindersPanel"><span>🔔</span>Reminders</button>
 </div></nav>
 
@@ -90,9 +91,9 @@ function renderTasks(){
  document.getElementById('completedWrap').style.display=completed.length?'block':'none';
  document.getElementById('completedCount').textContent=completed.length+' completed';
  document.getElementById('completedList').innerHTML=completed.map(completedItem).join('');
- document.querySelectorAll('[data-day-check]').forEach(function(e){e.onchange=function(){var p=e.dataset.dayCheck.split(':'),arr=p[0]==='note'?notes:tasks,x=arr.find(function(v){return v.id===p[1]});if(x)x.done=true;save(p[0]==='note'?KEYS.notes:KEYS.tasks,arr);renderTasks();if(p[0]==='note')renderNotes();toast('Moved to Completed Tasks')}});
- document.querySelectorAll('[data-restore]').forEach(function(e){e.onclick=function(){var p=e.dataset.restore.split(':'),arr=p[0]==='note'?notes:tasks,x=arr.find(function(v){return v.id===p[1]});if(x)x.done=false;save(p[0]==='note'?KEYS.notes:KEYS.tasks,arr);renderTasks();if(p[0]==='note')renderNotes();toast('Put back on your to-do list')}});
- document.querySelectorAll('[data-day-delete]').forEach(function(e){e.onclick=function(){if(!confirm('Delete this item?'))return;var p=e.dataset.dayDelete.split(':');if(p[0]==='note'){notes=notes.filter(function(x){return x.id!==p[1]});save(KEYS.notes,notes);renderNotes()}else{tasks=tasks.filter(function(x){return x.id!==p[1]});save(KEYS.tasks,tasks)}renderTasks()}});
+ document.querySelectorAll('[data-day-check]').forEach(function(e){e.onchange=function(){var p=e.dataset.dayCheck.split(':'),arr=p[0]==='note'?notes:tasks,x=arr.find(function(v){return v.id===p[1]});if(x)x.done=true;save(p[0]==='note'?KEYS.notes:KEYS.tasks,arr);renderTasks();if(p[0]==='note')renderNotes();renderCompleted();toast('Moved to Completed Tasks')}});
+ document.querySelectorAll('[data-restore]').forEach(function(e){e.onclick=function(){var p=e.dataset.restore.split(':'),arr=p[0]==='note'?notes:tasks,x=arr.find(function(v){return v.id===p[1]});if(x)x.done=false;save(p[0]==='note'?KEYS.notes:KEYS.tasks,arr);renderTasks();if(p[0]==='note')renderNotes();renderCompleted();toast('Put back on your to-do list')}});
+ document.querySelectorAll('[data-day-delete]').forEach(function(e){e.onclick=function(){if(!confirm('Delete this item?'))return;var p=e.dataset.dayDelete.split(':');if(p[0]==='note'){notes=notes.filter(function(x){return x.id!==p[1]});save(KEYS.notes,notes);renderNotes()}else{tasks=tasks.filter(function(x){return x.id!==p[1]});save(KEYS.tasks,tasks)}renderTasks();renderCompleted()}});
 }
 function addTask(text,date,time){text=(text||'').trim();if(!text)return;date=date||dateKey();tasks.unshift({id:id(),text:text,date:date,time:time||'',done:false,created:Date.now()});save(KEYS.tasks,tasks);document.getElementById('taskInput').value='';document.getElementById('taskDate').value='';document.getElementById('taskTime').value='';document.getElementById('viewDate').value=date;renderTasks();toast(date===dateKey()?'Added to today':'Added to selected day')}
 document.getElementById('addTask').onclick=function(){addTask(document.getElementById('taskInput').value,document.getElementById('taskDate').value,document.getElementById('taskTime').value)};
@@ -103,13 +104,22 @@ document.getElementById('goToday').onclick=function(){document.getElementById('v
 function renderNotes(){
  document.getElementById('noteCount').textContent=notes.length?notes.length+' saved':'';
  document.getElementById('noteList').innerHTML=notes.length?notes.map(function(n){var scheduled=new Date((n.date||dateKey())+'T12:00:00').toLocaleDateString([],{month:'short',day:'numeric'})+(n.time?' at '+formatTime(n.time):'');return '<div class="item '+(n.done?'done':'')+'"><div class="itemBody"><div class="itemText">'+esc(n.text)+'</div><div class="meta">On daily list: '+scheduled+' · Saved '+new Date(n.created).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+'</div><div style="margin-top:9px"><button class="secondary" data-edit-note="'+n.id+'">Edit</button></div></div><button aria-label="Delete note" class="iconBtn danger" data-delete-note="'+n.id+'">×</button></div>'}).join(''):'<div class="empty">Your spoken and typed notes will show here.</div>';
- document.querySelectorAll('[data-delete-note]').forEach(function(e){e.onclick=function(){if(confirm('Delete this note?')){notes=notes.filter(function(x){return x.id!==e.dataset.deleteNote});save(KEYS.notes,notes);renderNotes()}}});
+ document.querySelectorAll('[data-delete-note]').forEach(function(e){e.onclick=function(){if(confirm('Delete this note?')){notes=notes.filter(function(x){return x.id!==e.dataset.deleteNote});save(KEYS.notes,notes);renderNotes();renderTasks();renderCompleted()}}});
  document.querySelectorAll('[data-edit-note]').forEach(function(e){e.onclick=function(){var n=notes.find(function(x){return x.id===e.dataset.editNote});if(!n)return;editingId=n.id;document.getElementById('editText').value=n.text;document.getElementById('editModal').classList.add('show')}});
 }
-function addNote(text,date,time){text=(text||'').trim();if(!text)return;date=date||dateKey();notes.unshift({id:id(),text:text,date:date,time:time||'',done:false,created:Date.now()});save(KEYS.notes,notes);document.getElementById('noteInput').value='';document.getElementById('noteDate').value='';document.getElementById('noteTime').value='';document.getElementById('viewDate').value=date;renderNotes();renderTasks();toast(date===dateKey()?'Note added to today':'Note added to selected day')}
+function addNote(text,date,time){text=(text||'').trim();if(!text)return;date=date||dateKey();notes.unshift({id:id(),text:text,date:date,time:time||'',done:false,created:Date.now()});save(KEYS.notes,notes);document.getElementById('noteInput').value='';document.getElementById('noteDate').value='';document.getElementById('noteTime').value='';document.getElementById('viewDate').value=date;renderNotes();renderTasks();renderCompleted();toast(date===dateKey()?'Note added to today':'Note added to selected day')}
 document.getElementById('saveNote').onclick=function(){addNote(document.getElementById('noteInput').value,document.getElementById('noteDate').value,document.getElementById('noteTime').value)};
 document.getElementById('cancelEdit').onclick=function(){document.getElementById('editModal').classList.remove('show')};
 document.getElementById('saveEdit').onclick=function(){var n=notes.find(function(x){return x.id===editingId});if(n){n.text=document.getElementById('editText').value.trim();save(KEYS.notes,notes);renderNotes();renderTasks()}document.getElementById('editModal').classList.remove('show');toast('Note updated')};
+
+function renderCompleted(){
+ var all=tasks.filter(function(t){return t.done}).map(function(t){return{kind:'task',id:t.id,text:t.text,date:t.date||dateKey(),time:t.time||''}}).concat(notes.filter(function(n){return n.done}).map(function(n){return{kind:'note',id:n.id,text:n.text,date:n.date||dateKey(),time:n.time||''}}));
+ all.sort(function(a,b){return (b.date+(b.time||'')).localeCompare(a.date+(a.time||''))});
+ document.getElementById('allCompletedCount').textContent=all.length?all.length+' completed':'';
+ document.getElementById('allCompletedList').innerHTML=all.length?all.map(function(t){var when=new Date(t.date+'T12:00:00').toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'})+(t.time?' at '+formatTime(t.time):'');return '<div class="item done"><div aria-hidden="true" style="color:var(--mint);font-size:1.3rem;font-weight:900;line-height:1">✓</div><div class="itemBody"><div class="typeTag">'+(t.kind==='note'?'Note':'Task')+'</div><div class="itemText">'+esc(t.text)+'</div><div class="meta">'+esc(when)+'</div><button class="secondary" style="margin-top:10px" data-all-restore="'+t.kind+':'+t.id+'">Put Back on To-Do List</button></div><button aria-label="Delete completed item" class="iconBtn danger" data-all-delete="'+t.kind+':'+t.id+'">×</button></div>'}).join(''):'<div class="empty">Completed tasks will show here.</div>';
+ document.querySelectorAll('[data-all-restore]').forEach(function(e){e.onclick=function(){var p=e.dataset.allRestore.split(':'),arr=p[0]==='note'?notes:tasks,x=arr.find(function(v){return v.id===p[1]});if(!x)return;x.done=false;save(p[0]==='note'?KEYS.notes:KEYS.tasks,arr);document.getElementById('viewDate').value=x.date||dateKey();renderTasks();renderNotes();renderCompleted();document.querySelector('[data-panel="todayPanel"]').click();toast('Put back on your to-do list')}});
+ document.querySelectorAll('[data-all-delete]').forEach(function(e){e.onclick=function(){if(!confirm('Delete this completed item?'))return;var p=e.dataset.allDelete.split(':');if(p[0]==='note'){notes=notes.filter(function(x){return x.id!==p[1]});save(KEYS.notes,notes);renderNotes()}else{tasks=tasks.filter(function(x){return x.id!==p[1]});save(KEYS.tasks,tasks)}renderTasks();renderCompleted()}});
+}
 
 function renderReminders(){
  reminders.sort(function(a,b){return (a.date+(a.time||'23:59')).localeCompare(b.date+(b.time||'23:59'))});
@@ -145,7 +155,7 @@ document.querySelectorAll('[data-voice-target]').forEach(function(btn){
 });
 document.getElementById('updateBtn').onclick=async function(){var b=this;b.textContent='Updating…';try{if('serviceWorker'in navigator){var regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.map(function(r){return r.update()}))}var names=await caches.keys();await Promise.all(names.map(function(n){return caches.delete(n)}));toast('App updated');setTimeout(function(){location.href=location.pathname+'?updated='+Date.now()},500)}catch(e){location.reload()}};
 if('serviceWorker'in navigator)window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js')});
-renderTasks();renderNotes();renderReminders();
+renderTasks();renderNotes();renderCompleted();renderReminders();
 })();
 </script>
 </body>
