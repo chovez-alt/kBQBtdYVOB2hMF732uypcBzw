@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#071426">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ADHD Reminders">
+<title>ADHD Daily Reminders</title>
+<meta name="description" content="Voice notes, daily tasks, and reminders for Dewayne.">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon.svg">
+<style>
+:root{--bg:#071426;--surface:#0d2039;--surface2:#123052;--blue:#2d7dff;--mint:#62e2c2;--text:#f7fbff;--muted:#a8bad1;--danger:#ff6b7a;--line:#244362;--shadow:0 14px 38px rgba(0,0,0,.28)}*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;min-height:100vh;background:radial-gradient(circle at 20% 0,#123c66 0,transparent 38%),var(--bg);color:var(--text);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:env(safe-area-inset-top) 0 calc(84px + env(safe-area-inset-bottom));-webkit-tap-highlight-color:transparent}button,input,textarea,select{font:inherit}button{cursor:pointer}.app{max-width:760px;margin:auto;padding:18px 16px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 0 18px}.top h1{font-size:1.35rem;margin:0;line-height:1.15}.update{border:1px solid #4173a4;background:#102b49;color:#dcecff;border-radius:14px;padding:10px 13px;font-weight:750;min-height:44px}.date{color:var(--muted);font-size:.92rem;margin-top:4px}.card{background:linear-gradient(145deg,rgba(18,48,82,.96),rgba(11,29,51,.98));border:1px solid var(--line);border-radius:22px;padding:17px;margin-bottom:14px;box-shadow:var(--shadow)}.focus{border-color:#3278c3}.eyebrow{color:var(--mint);font-weight:800;font-size:.78rem;letter-spacing:.09em;text-transform:uppercase}.focusText{font-size:1.18rem;font-weight:800;margin:7px 0 2px}.progress{height:8px;background:#071426;border-radius:8px;margin-top:13px;overflow:hidden}.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--mint));width:0}.voice{display:block;width:100%;border:0;background:linear-gradient(135deg,#176bf2,#3b8cff);color:white;border-radius:20px;padding:19px 16px;font-size:1.15rem;font-weight:850;box-shadow:0 11px 25px rgba(22,107,242,.35)}.voice.listening{background:linear-gradient(135deg,#e24b61,#ff7587);animation:pulse 1.2s infinite}@keyframes pulse{50%{transform:scale(.985)}}.hint{color:var(--muted);font-size:.9rem;text-align:center;margin:9px 0 0}.row{display:flex;gap:9px}.row>*:first-child{flex:1}.input,textarea,select{width:100%;background:#081a2d;border:1px solid #315275;color:var(--text);border-radius:14px;padding:13px 14px;min-height:48px}.input:focus,textarea:focus,select:focus{outline:3px solid rgba(45,125,255,.3);border-color:#63a0ff}.primary{border:0;background:var(--blue);color:#fff;border-radius:14px;padding:12px 16px;font-weight:800;min-height:48px}.secondary{border:1px solid #3a638c;background:#102944;color:#eaf4ff;border-radius:12px;padding:10px 13px;font-weight:750}.danger{color:#ff9fab}.sectionTitle{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.sectionTitle h2{font-size:1.08rem;margin:0}.count{color:var(--muted);font-size:.9rem}.list{display:grid;gap:9px}.item{display:flex;align-items:flex-start;gap:11px;background:rgba(6,20,36,.64);border:1px solid #254561;border-radius:16px;padding:13px}.item.done{opacity:.56}.item.done .itemText{text-decoration:line-through}.check{appearance:none;width:25px;height:25px;min-width:25px;border:2px solid #5f82a5;border-radius:8px;margin:1px 0 0;background:#08192a}.check:checked{background:var(--mint);border-color:var(--mint);box-shadow:inset 0 0 0 5px #123052}.itemBody{flex:1;min-width:0}.itemText{font-weight:700;overflow-wrap:anywhere}.meta{color:var(--muted);font-size:.84rem;margin-top:3px}.iconBtn{border:0;background:transparent;color:#b7cae0;padding:3px 5px;font-size:1.15rem}.empty{color:var(--muted);text-align:center;padding:20px 8px}.tabs{position:fixed;z-index:10;left:0;right:0;bottom:0;background:rgba(5,17,31,.96);backdrop-filter:blur(18px);border-top:1px solid #213f5d;padding:8px 8px calc(8px + env(safe-area-inset-bottom));display:flex;justify-content:center}.tabInner{width:min(760px,100%);display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.tab{border:0;background:transparent;color:#8fa8c2;border-radius:13px;padding:8px 4px;font-size:.76rem;font-weight:750}.tab span{display:block;font-size:1.3rem;line-height:1.2;margin-bottom:2px}.tab.active{background:#123052;color:white}.panel{display:none}.panel.active{display:block}.modal{position:fixed;z-index:30;inset:0;background:rgba(2,10,19,.78);display:none;align-items:flex-end;justify-content:center}.modal.show{display:flex}.sheet{width:min(760px,100%);max-height:88vh;overflow:auto;background:#0d2039;border:1px solid #315375;border-radius:24px 24px 0 0;padding:20px 17px calc(20px + env(safe-area-inset-bottom))}.sheet h2{margin:0 0 14px}.sheetActions{display:flex;gap:9px;margin-top:12px}.sheetActions>*{flex:1}.field{margin:10px 0}.field label{display:block;color:#bfd0e2;font-weight:700;margin-bottom:6px}.seg{display:grid;grid-template-columns:1fr 1fr;gap:7px}.seg button{border:1px solid #355979;background:#0a1c30;color:#bcd0e4;border-radius:12px;padding:11px}.seg button.active{background:#1f6fe5;color:white;border-color:#4c91f3}.toast{position:fixed;z-index:40;left:50%;bottom:100px;transform:translateX(-50%) translateY(20px);opacity:0;background:#eef7ff;color:#092039;border-radius:13px;padding:11px 15px;font-weight:750;box-shadow:var(--shadow);transition:.25s;pointer-events:none;white-space:nowrap;max-width:90vw}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}@media(min-width:680px){.app{padding-top:30px}.top h1{font-size:1.65rem}.card{padding:21px}.modal{align-items:center}.sheet{border-radius:24px;margin:20px}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="app">
+<header class="top"><div><h1>ADHD Daily Reminders</h1><div class="date" id="todayDate"></div></div><button class="update" id="updateBtn">↻ Update App</button></header>
+
+<section class="panel active" id="todayPanel">
+<div class="card focus"><div class="eyebrow">What matters now?</div><div class="focusText" id="focusText">Add your first task for today.</div><div class="meta" id="progressText">0 of 0 complete</div><div class="progress"><i id="progressBar"></i></div></div>
+<div class="card"><button class="voice" data-voice-target="task">🎙️ Tap and say a task</button><p class="hint">I’ll write it down and add it to today.</p></div>
+<div class="card"><div class="sectionTitle"><h2>Today’s list</h2><span class="count" id="taskCount"></span></div><div class="row"><input class="input" id="taskInput" placeholder="What needs done?" autocomplete="off"><button class="primary" id="addTask">Add</button></div><div class="list" id="taskList" style="margin-top:12px"></div></div>
+</section>
+
+<section class="panel" id="speakPanel">
+<div class="card"><div class="eyebrow">Quick capture</div><h2 style="margin:5px 0 15px">Say it before you forget it</h2><button class="voice" data-voice-target="note">🎙️ Tap to speak a note</button><p class="hint" id="speechHint">Your words will appear as a saved note.</p></div>
+<div class="card"><div class="sectionTitle"><h2>Or type a note</h2></div><textarea id="noteInput" rows="5" placeholder="Write anything you want to remember..."></textarea><button class="primary" id="saveNote" style="width:100%;margin-top:10px">Save Note</button></div>
+</section>
+
+<section class="panel" id="notesPanel">
+<div class="card"><div class="sectionTitle"><h2>My notes</h2><span class="count" id="noteCount"></span></div><div class="list" id="noteList"></div></div>
+</section>
+
+<section class="panel" id="remindersPanel">
+<div class="card"><div class="sectionTitle"><h2>Add a reminder</h2></div><input class="input" id="reminderText" placeholder="What do you need to remember?"><div class="field"><label>Day</label><input class="input" type="date" id="reminderDate"></div><div class="field"><label>When</label><div class="seg"><button id="anytimeBtn" class="active">Anytime today</button><button id="timeBtn">Certain time</button></div></div><div class="field" id="timeField" style="display:none"><label>Time</label><input class="input" type="time" id="reminderTime"></div><button class="primary" id="addReminder" style="width:100%">Save Reminder</button><p class="hint">For a dependable iPhone alert, use “Add to Calendar” after saving.</p></div>
+<div class="card"><div class="sectionTitle"><h2>Reminders</h2><span class="count" id="reminderCount"></span></div><div class="list" id="reminderList"></div></div>
+</section>
+</main>
+
+<nav class="tabs"><div class="tabInner">
+<button class="tab active" data-panel="todayPanel"><span>✓</span>Today</button>
+<button class="tab" data-panel="speakPanel"><span>🎙️</span>Speak</button>
+<button class="tab" data-panel="notesPanel"><span>📝</span>Notes</button>
+<button class="tab" data-panel="remindersPanel"><span>🔔</span>Reminders</button>
+</div></nav>
+
+<div class="modal" id="editModal"><div class="sheet"><h2>Edit note</h2><textarea id="editText" rows="7"></textarea><div class="sheetActions"><button class="secondary" id="cancelEdit">Cancel</button><button class="primary" id="saveEdit">Save changes</button></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+var KEYS={tasks:'adhd_tasks_v1',notes:'adhd_notes_v1',reminders:'adhd_reminders_v1'};
+var tasks=load(KEYS.tasks),notes=load(KEYS.notes),reminders=load(KEYS.reminders),editingId=null,reminderTimed=false;
+function load(k){try{return JSON.parse(localStorage.getItem(k)||'[]')}catch(e){return[]}}
+function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]})}
+function dateKey(d){var x=d||new Date();return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')}
+function toast(s){var e=document.getElementById('toast');e.textContent=s;e.classList.add('show');clearTimeout(e.t);e.t=setTimeout(function(){e.classList.remove('show')},2200)}
+document.getElementById('todayDate').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+document.getElementById('reminderDate').value=dateKey();
+document.querySelectorAll('.tab').forEach(function(b){b.onclick=function(){document.querySelectorAll('.tab,.panel').forEach(function(x){x.classList.remove('active')});b.classList.add('active');document.getElementById(b.dataset.panel).classList.add('active')}});
+
+function renderTasks(){
+ var today=dateKey(),list=tasks.filter(function(t){return t.date===today}),done=list.filter(function(t){return t.done}).length;
+ document.getElementById('taskCount').textContent=list.length?done+'/'+list.length+' done':'';
+ document.getElementById('progressText').textContent=done+' of '+list.length+' complete';
+ document.getElementById('progressBar').style.width=(list.length?done/list.length*100:0)+'%';
+ var next=list.find(function(t){return !t.done});
+ document.getElementById('focusText').textContent=next?next.text:(list.length?'You finished today’s list.':'Add your first task for today.');
+ document.getElementById('taskList').innerHTML=list.length?list.map(function(t){return '<div class="item '+(t.done?'done':'')+'"><input aria-label="Mark complete" class="check" type="checkbox" data-check="'+t.id+'" '+(t.done?'checked':'')+'><div class="itemBody"><div class="itemText">'+esc(t.text)+'</div></div><button aria-label="Delete task" class="iconBtn danger" data-delete-task="'+t.id+'">×</button></div>'}).join(''):'<div class="empty">Nothing on today’s list yet.</div>';
+ document.querySelectorAll('[data-check]').forEach(function(e){e.onchange=function(){var t=tasks.find(function(x){return x.id===e.dataset.check});if(t)t.done=e.checked;save(KEYS.tasks,tasks);renderTasks()}});
+ document.querySelectorAll('[data-delete-task]').forEach(function(e){e.onclick=function(){if(confirm('Delete this task?')){tasks=tasks.filter(function(x){return x.id!==e.dataset.deleteTask});save(KEYS.tasks,tasks);renderTasks()}}});
+}
+function addTask(text){text=(text||'').trim();if(!text)return;tasks.unshift({id:id(),text:text,date:dateKey(),done:false,created:Date.now()});save(KEYS.tasks,tasks);document.getElementById('taskInput').value='';renderTasks();toast('Added to today')}
+document.getElementById('addTask').onclick=function(){addTask(document.getElementById('taskInput').value)};
+document.getElementById('taskInput').onkeydown=function(e){if(e.key==='Enter')addTask(e.target.value)};
+
+function renderNotes(){
+ document.getElementById('noteCount').textContent=notes.length?notes.length+' saved':'';
+ document.getElementById('noteList').innerHTML=notes.length?notes.map(function(n){return '<div class="item"><div class="itemBody"><div class="itemText">'+esc(n.text)+'</div><div class="meta">'+new Date(n.created).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+'</div><div style="margin-top:9px"><button class="secondary" data-edit-note="'+n.id+'">Edit</button></div></div><button aria-label="Delete note" class="iconBtn danger" data-delete-note="'+n.id+'">×</button></div>'}).join(''):'<div class="empty">Your spoken and typed notes will show here.</div>';
+ document.querySelectorAll('[data-delete-note]').forEach(function(e){e.onclick=function(){if(confirm('Delete this note?')){notes=notes.filter(function(x){return x.id!==e.dataset.deleteNote});save(KEYS.notes,notes);renderNotes()}}});
+ document.querySelectorAll('[data-edit-note]').forEach(function(e){e.onclick=function(){var n=notes.find(function(x){return x.id===e.dataset.editNote});if(!n)return;editingId=n.id;document.getElementById('editText').value=n.text;document.getElementById('editModal').classList.add('show')}});
+}
+function addNote(text){text=(text||'').trim();if(!text)return;notes.unshift({id:id(),text:text,created:Date.now()});save(KEYS.notes,notes);document.getElementById('noteInput').value='';renderNotes();toast('Note saved')}
+document.getElementById('saveNote').onclick=function(){addNote(document.getElementById('noteInput').value)};
+document.getElementById('cancelEdit').onclick=function(){document.getElementById('editModal').classList.remove('show')};
+document.getElementById('saveEdit').onclick=function(){var n=notes.find(function(x){return x.id===editingId});if(n){n.text=document.getElementById('editText').value.trim();save(KEYS.notes,notes);renderNotes()}document.getElementById('editModal').classList.remove('show');toast('Note updated')};
+
+function renderReminders(){
+ reminders.sort(function(a,b){return (a.date+(a.time||'23:59')).localeCompare(b.date+(b.time||'23:59'))});
+ document.getElementById('reminderCount').textContent=reminders.length?reminders.filter(function(r){return !r.done}).length+' open':'';
+ document.getElementById('reminderList').innerHTML=reminders.length?reminders.map(function(r){var when=new Date(r.date+'T12:00:00').toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'})+(r.time?' at '+formatTime(r.time):' · Anytime');return '<div class="item '+(r.done?'done':'')+'"><input aria-label="Mark reminder complete" class="check" type="checkbox" data-rem-check="'+r.id+'" '+(r.done?'checked':'')+'><div class="itemBody"><div class="itemText">'+esc(r.text)+'</div><div class="meta">'+esc(when)+'</div><div style="margin-top:9px"><button class="secondary" data-calendar="'+r.id+'">Add to Calendar</button></div></div><button aria-label="Delete reminder" class="iconBtn danger" data-delete-rem="'+r.id+'">×</button></div>'}).join(''):'<div class="empty">No reminders saved.</div>';
+ document.querySelectorAll('[data-rem-check]').forEach(function(e){e.onchange=function(){var r=reminders.find(function(x){return x.id===e.dataset.remCheck});if(r)r.done=e.checked;save(KEYS.reminders,reminders);renderReminders()}});
+ document.querySelectorAll('[data-delete-rem]').forEach(function(e){e.onclick=function(){if(confirm('Delete this reminder?')){reminders=reminders.filter(function(x){return x.id!==e.dataset.deleteRem});save(KEYS.reminders,reminders);renderReminders()}}});
+ document.querySelectorAll('[data-calendar]').forEach(function(e){e.onclick=function(){var r=reminders.find(function(x){return x.id===e.dataset.calendar});if(r)calendar(r)}});
+}
+function formatTime(t){var p=t.split(':'),d=new Date();d.setHours(+p[0],+p[1]);return d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}
+document.getElementById('anytimeBtn').onclick=function(){reminderTimed=false;this.classList.add('active');document.getElementById('timeBtn').classList.remove('active');document.getElementById('timeField').style.display='none'};
+document.getElementById('timeBtn').onclick=function(){reminderTimed=true;this.classList.add('active');document.getElementById('anytimeBtn').classList.remove('active');document.getElementById('timeField').style.display='block'};
+document.getElementById('addReminder').onclick=function(){var text=document.getElementById('reminderText').value.trim(),date=document.getElementById('reminderDate').value,time=reminderTimed?document.getElementById('reminderTime').value:'';if(!text){toast('Say what to remember');return}if(!date){toast('Choose a day');return}if(reminderTimed&&!time){toast('Choose a time');return}reminders.push({id:id(),text:text,date:date,time:time,done:false,notified:false});save(KEYS.reminders,reminders);document.getElementById('reminderText').value='';renderReminders();toast('Reminder saved')};
+function calendar(r){var start=(r.date.replaceAll('-','')+'T'+(r.time?r.time.replace(':','')+'00':'090000'));var end=(r.date.replaceAll('-','')+'T'+(r.time?addHour(r.time):'093000'));var body='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//ADHD Daily Reminders//EN\r\nBEGIN:VEVENT\r\nUID:'+r.id+'@adhd-reminders\r\nDTSTART:'+start+'\r\nDTEND:'+end+'\r\nSUMMARY:'+r.text.replace(/[\n,;]/g,' ')+'\r\nBEGIN:VALARM\r\nTRIGGER:-PT10M\r\nACTION:DISPLAY\r\nDESCRIPTION:Reminder\r\nEND:VALARM\r\nEND:VEVENT\r\nEND:VCALENDAR';var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([body],{type:'text/calendar'}));a.download='reminder.ics';a.click();setTimeout(function(){URL.revokeObjectURL(a.href)},1000);toast('Open the download to add it')}
+function addHour(t){var p=t.split(':'),m=(+p[0]*60+(+p[1])+60)%(24*60);return String(Math.floor(m/60)).padStart(2,'0')+String(m%60).padStart(2,'0')+'00'}
+function checkDue(){var now=new Date();reminders.forEach(function(r){if(r.done||r.notified||!r.time)return;var due=new Date(r.date+'T'+r.time);if(now>=due&&now-due<3600000){r.notified=true;toast('Reminder: '+r.text);if('Notification'in window&&Notification.permission==='granted')new Notification('ADHD Daily Reminders',{body:r.text,icon:'./icon.svg'})}});save(KEYS.reminders,reminders)}
+setInterval(checkDue,30000);checkDue();
+
+var Speech=window.SpeechRecognition||window.webkitSpeechRecognition;
+document.querySelectorAll('[data-voice-target]').forEach(function(btn){btn.onclick=function(){if(!Speech){toast('Voice writing is not available here. Try Safari.');return}var rec=new Speech();rec.lang='en-US';rec.interimResults=false;rec.maxAlternatives=1;var old=btn.textContent;btn.classList.add('listening');btn.textContent='Listening… tap when finished';rec.onresult=function(e){var text=e.results[0][0].transcript;if(btn.dataset.voiceTarget==='task')addTask(text);else{addNote(text);document.querySelector('[data-panel="notesPanel"]').click()}};rec.onerror=function(){toast('I could not hear that. Try again.')};rec.onend=function(){btn.classList.remove('listening');btn.textContent=old};btn.onclick=function(){rec.stop()};rec.start()}});
+document.getElementById('updateBtn').onclick=async function(){var b=this;b.textContent='Updating…';try{if('serviceWorker'in navigator){var regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.map(function(r){return r.update()}))}var names=await caches.keys();await Promise.all(names.map(function(n){return caches.delete(n)}));toast('App updated');setTimeout(function(){location.href=location.pathname+'?updated='+Date.now()},500)}catch(e){location.reload()}};
+if('serviceWorker'in navigator)window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js')});
+renderTasks();renderNotes();renderReminders();
+})();
+</script>
+</body>
+</html>
