@@ -128,12 +128,12 @@ document.querySelectorAll('[data-voice-target]').forEach(function(btn){
  btn.onclick=function(){
   if(active){try{active.stop()}catch(e){}return}
   if(!Speech){toast('Voice writing is not available here. Try Safari.');return}
-  var rec=new Speech(),finalText='',original=btn.textContent;
+  var rec=new Speech(),finalText='',latestText='',original=btn.textContent;
   active=rec;rec.lang='en-US';rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;
   btn.classList.add('listening');btn.textContent='Listening… tap to stop';
-  rec.onresult=function(e){for(var i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)finalText+=(finalText?' ':'')+e.results[i][0].transcript}};
+  rec.onresult=function(e){for(var i=e.resultIndex;i<e.results.length;i++){latestText=e.results[i][0].transcript;if(e.results[i].isFinal)finalText+=(finalText?' ':'')+latestText}};
   rec.onerror=function(e){if(e.error!=='aborted'&&e.error!=='no-speech')toast('I could not hear that. Try again.')};
-  rec.onend=function(){active=null;btn.classList.remove('listening');btn.textContent=original;finalText=finalText.trim();if(!finalText){toast('Nothing heard—tap and try again');return}if(btn.dataset.voiceTarget==='task')addTask(finalText,document.getElementById('taskDate').value,document.getElementById('taskTime').value);else{addNote(finalText,document.getElementById('noteDate').value,document.getElementById('noteTime').value);document.querySelector('[data-panel="notesPanel"]').click()}};
+  rec.onend=function(){active=null;btn.classList.remove('listening');btn.textContent=original;finalText=finalText.trim()||latestText.trim();if(!finalText){toast('Nothing heard—tap and try again');return}if(btn.dataset.voiceTarget==='task')addTask(finalText,document.getElementById('taskDate').value,document.getElementById('taskTime').value);else{addNote(finalText,document.getElementById('noteDate').value,document.getElementById('noteTime').value);document.querySelector('[data-panel="notesPanel"]').click()}};
   try{rec.start()}catch(e){active=null;btn.classList.remove('listening');btn.textContent=original;toast('Tap again to start listening')}
  }
 });
