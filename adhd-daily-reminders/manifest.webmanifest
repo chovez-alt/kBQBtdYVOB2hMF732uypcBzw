@@ -1,0 +1,18 @@
+{
+  "name": "ADHD Daily Reminders",
+  "short_name": "ADHD Reminders",
+  "description": "Voice notes, daily tasks, and reminders.",
+  "start_url": "/adhd-daily-reminders/",
+  "scope": "/adhd-daily-reminders/",
+  "display": "standalone",
+  "background_color": "#071426",
+  "theme_color": "#0b63f6",
+  "icons": [
+    {
+      "src": "/adhd-daily-reminders/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
