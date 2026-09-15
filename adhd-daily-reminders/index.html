@@ -22,12 +22,12 @@
 <section class="panel active" id="todayPanel">
 <div class="card" style="padding-top:12px;padding-bottom:12px"><div class="field" style="margin:0"><label>Show my list for</label><div class="row"><input class="input" type="date" id="viewDate"><button class="secondary" id="goToday">Today</button></div></div></div>
 <div class="card focus"><div class="eyebrow">What matters now?</div><div class="focusText" id="focusText">Add your first task for today.</div><div class="meta" id="progressText">0 of 0 complete</div><div class="progress"><i id="progressBar"></i></div></div>
-<div class="card"><button class="voice" data-voice-target="task">🎙️ Tap and say a task</button><p class="hint">I’ll write it down and add it to today.</p></div>
+<div class="card"><button class="voice" data-voice-target="task">🎙️ Tap and say a task</button><p class="hint">I’ll write it down and add it to today.</p><p class="hint" data-mic-status aria-live="polite"></p></div>
 <div class="card"><div class="sectionTitle"><h2 id="dailyListTitle">Today’s list</h2><span class="count" id="taskCount"></span></div><div class="row"><input class="input" id="taskInput" placeholder="Example: Show Annie I love her" autocomplete="off"><button class="primary" id="addTask">Add</button></div><div class="scheduleGrid"><div class="field"><label>Date (optional)</label><input class="input" type="date" id="taskDate"></div><div class="field"><label>Time (optional)</label><input class="input" type="time" id="taskTime"></div></div><div class="hint" style="text-align:left;margin-top:-3px">Leave both blank and it goes on today.</div><div class="list" id="taskList" style="margin-top:12px"></div></div>
 </section>
 
 <section class="panel" id="notesPanel">
-<div class="card"><div class="eyebrow">Quick capture</div><h2 style="margin:5px 0 15px">Say it before you forget it</h2><button class="voice" data-voice-target="note">🎙️ Tap to speak a note</button><p class="hint" id="speechHint">Your words will be saved and shown on your daily list.</p><div class="scheduleGrid"><div class="field"><label>Date (optional)</label><input class="input" type="date" id="noteDate"></div><div class="field"><label>Time (optional)</label><input class="input" type="time" id="noteTime"></div></div><div class="hint" style="text-align:left;margin-top:-3px">Leave both blank and it goes on today.</div></div>
+<div class="card"><div class="eyebrow">Quick capture</div><h2 style="margin:5px 0 15px">Say it before you forget it</h2><button class="voice" data-voice-target="note">🎙️ Tap to speak a note</button><p class="hint" id="speechHint">Your words will be saved and shown on your daily list.</p><p class="hint" data-mic-status aria-live="polite"></p><div class="scheduleGrid"><div class="field"><label>Date (optional)</label><input class="input" type="date" id="noteDate"></div><div class="field"><label>Time (optional)</label><input class="input" type="time" id="noteTime"></div></div><div class="hint" style="text-align:left;margin-top:-3px">Leave both blank and it goes on today.</div></div>
 <div class="card"><div class="sectionTitle"><h2>Or type a note</h2></div><textarea id="noteInput" rows="5" placeholder="Write anything you want to remember..."></textarea><button class="primary" id="saveNote" style="width:100%;margin-top:10px">Save Note</button></div>
 <div class="card"><div class="sectionTitle"><h2>My notes</h2><span class="count" id="noteCount"></span></div><div class="list" id="noteList"></div></div>
 </section>
@@ -135,6 +135,15 @@ function checkDue(){var now=new Date();reminders.forEach(function(r){if(r.done||
 setInterval(checkDue,30000);checkDue();
 
 var Speech=window.SpeechRecognition||window.webkitSpeechRecognition;
+var MIC_KEY='adhd_microphone_approved_v1';
+function micStatus(message){document.querySelectorAll('[data-mic-status]').forEach(function(e){e.textContent=message})}
+if(localStorage.getItem(MIC_KEY)==='yes')micStatus('Microphone approved on this device.');
+if(navigator.permissions&&navigator.permissions.query){
+ navigator.permissions.query({name:'microphone'}).then(function(p){
+  function sync(){if(p.state==='granted'){localStorage.setItem(MIC_KEY,'yes');micStatus('Microphone approved on this device.')}else if(p.state==='denied'){localStorage.removeItem(MIC_KEY);micStatus('Microphone blocked. Allow it in your browser settings.')}else if(localStorage.getItem(MIC_KEY)==='yes'){micStatus('Microphone previously approved; your iPhone may ask again.')}else micStatus('Tap once to allow microphone access.')}
+  sync();p.onchange=sync;
+ }).catch(function(){});
+}
 document.querySelectorAll('[data-voice-target]').forEach(function(btn){
  var active=null;
  btn.onclick=function(){
@@ -143,8 +152,8 @@ document.querySelectorAll('[data-voice-target]').forEach(function(btn){
   var rec=new Speech(),finalText='',latestText='',original=btn.textContent;
   active=rec;rec.lang='en-US';rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;
   btn.classList.add('listening');btn.textContent='Listening… tap to stop';
-  rec.onresult=function(e){for(var i=e.resultIndex;i<e.results.length;i++){latestText=e.results[i][0].transcript;if(e.results[i].isFinal)finalText+=(finalText?' ':'')+latestText}};
-  rec.onerror=function(e){if(e.error!=='aborted'&&e.error!=='no-speech')toast('I could not hear that. Try again.')};
+  rec.onresult=function(e){localStorage.setItem(MIC_KEY,'yes');micStatus('Microphone approved on this device.');for(var i=e.resultIndex;i<e.results.length;i++){latestText=e.results[i][0].transcript;if(e.results[i].isFinal)finalText+=(finalText?' ':'')+latestText}};
+  rec.onerror=function(e){if(e.error==='not-allowed'||e.error==='service-not-allowed'){localStorage.removeItem(MIC_KEY);micStatus('Microphone blocked. Allow it in your browser settings.');toast('Allow microphone access to use voice notes.')}else if(e.error!=='aborted'&&e.error!=='no-speech')toast('I could not hear that. Try again.')};
   rec.onend=function(){active=null;btn.classList.remove('listening');btn.textContent=original;finalText=finalText.trim()||latestText.trim();if(!finalText){toast('Nothing heard—tap and try again');return}if(btn.dataset.voiceTarget==='task')addTask(finalText,document.getElementById('taskDate').value,document.getElementById('taskTime').value);else{addNote(finalText,document.getElementById('noteDate').value,document.getElementById('noteTime').value);document.querySelector('[data-panel="notesPanel"]').click()}};
   try{rec.start()}catch(e){active=null;btn.classList.remove('listening');btn.textContent=original;toast('Tap again to start listening')}
  }
