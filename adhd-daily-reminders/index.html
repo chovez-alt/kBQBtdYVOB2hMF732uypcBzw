@@ -75,18 +75,18 @@ document.querySelectorAll('.tab').forEach(function(b){b.onclick=function(){docum
 
 function renderTasks(){
  selectedDay=document.getElementById('viewDate').value||dateKey();
- var dayTasks=tasks.filter(function(t){return (t.date||dateKey())===selectedDay}).map(function(t){return{kind:'task',id:t.id,text:t.text,time:t.time||'',done:!!t.done,created:t.created||0}});
+ var today=dateKey(),isToday=selectedDay===today;
+ var dayTasks=tasks.filter(function(t){var scheduled=t.date||today;return scheduled===selectedDay||(isToday&&!t.done&&scheduled<today)}).map(function(t){return{kind:'task',id:t.id,text:t.text,date:t.date||today,time:t.time||'',done:!!t.done,created:t.created||0}});
  var dayNotes=notes.filter(function(n){return (n.date||dateKey())===selectedDay}).map(function(n){return{kind:'note',id:n.id,text:n.text,time:n.time||'',done:!!n.done,created:n.created||0}});
- var allForDay=dayTasks.concat(dayNotes).sort(function(a,b){return (a.time||'99:99').localeCompare(b.time||'99:99')||a.created-b.created});
+ var allForDay=dayTasks.concat(dayNotes).sort(function(a,b){var ad=a.date||selectedDay,bd=b.date||selectedDay;return ad.localeCompare(bd)||(a.time||'99:99').localeCompare(b.time||'99:99')||a.created-b.created});
  var open=allForDay.filter(function(t){return !t.done}),done=allForDay.length-open.length;
- var isToday=selectedDay===dateKey();
  document.getElementById('dailyListTitle').textContent=isToday?'Today’s To-Do List':new Date(selectedDay+'T12:00:00').toLocaleDateString([],{weekday:'long',month:'short',day:'numeric'});
  document.getElementById('taskCount').textContent=open.length?open.length+' left':(allForDay.length?'All done':'');
  document.getElementById('progressText').textContent=done+' of '+allForDay.length+' complete';
  document.getElementById('progressBar').style.width=(allForDay.length?done/allForDay.length*100:0)+'%';
  var next=open[0];
  document.getElementById('focusText').textContent=next?next.text:(allForDay.length?'You finished this day’s list.':'Nothing scheduled for this day.');
- function openItem(t){return '<div class="item"><input aria-label="Mark complete" class="check" type="checkbox" data-day-check="'+t.kind+':'+t.id+'"><div class="itemBody"><div class="typeTag">'+(t.kind==='note'?'Note':'Task')+'</div><div class="itemText">'+esc(t.text)+'</div>'+(t.time?'<div class="meta">'+formatTime(t.time)+'</div>':'')+'</div><button aria-label="Delete item" class="iconBtn danger" data-day-delete="'+t.kind+':'+t.id+'">×</button></div>'}
+ function openItem(t){return '<div class="item"><input aria-label="Mark complete" class="check" type="checkbox" data-day-check="'+t.kind+':'+t.id+'"><div class="itemBody"><div class="typeTag">'+(t.kind==='note'?'Note':'Task')+'</div><div class="itemText">'+esc(t.text)+'</div>'+(isToday&&t.kind==='task'&&t.date<today?'<div class="meta">Carried forward from '+new Date(t.date+'T12:00:00').toLocaleDateString([],{month:'short',day:'numeric'})+'</div>':'')+(t.time?'<div class="meta">Scheduled time: '+formatTime(t.time)+'</div>':'')+'</div><button aria-label="Delete item" class="iconBtn danger" data-day-delete="'+t.kind+':'+t.id+'">×</button></div>'}
  document.getElementById('taskList').innerHTML=open.length?open.map(openItem).join(''):'<div class="empty">'+(allForDay.length?'Everything is completed. Check the Completed tab.':'Nothing scheduled for this day.')+'</div>';
  document.querySelectorAll('[data-day-check]').forEach(function(e){e.onchange=function(){var p=e.dataset.dayCheck.split(':'),arr=p[0]==='note'?notes:tasks,x=arr.find(function(v){return v.id===p[1]});if(x){x.done=true;x.completedAt=new Date().toISOString()}save(p[0]==='note'?KEYS.notes:KEYS.tasks,arr);renderTasks();if(p[0]==='note')renderNotes();renderCompleted();toast('Moved to the Completed tab')}});
  document.querySelectorAll('[data-day-delete]').forEach(function(e){e.onclick=function(){if(!confirm('Delete this item?'))return;var p=e.dataset.dayDelete.split(':');if(p[0]==='note'){notes=notes.filter(function(x){return x.id!==p[1]});save(KEYS.notes,notes);renderNotes()}else{tasks=tasks.filter(function(x){return x.id!==p[1]});save(KEYS.tasks,tasks)}renderTasks();renderCompleted()}});
@@ -96,6 +96,10 @@ document.getElementById('addTask').onclick=function(){addTask(document.getElemen
 document.getElementById('taskInput').onkeydown=function(e){if(e.key==='Enter')addTask(e.target.value,document.getElementById('taskDate').value,document.getElementById('taskTime').value)};
 document.getElementById('viewDate').onchange=renderTasks;
 document.getElementById('goToday').onclick=function(){document.getElementById('viewDate').value=dateKey();renderTasks()};
+function refreshTodayOnNewDay(){var today=dateKey();if(selectedDay!==today&&selectedDay===lastToday){document.getElementById('viewDate').value=today;document.getElementById('reminderDate').value=today;renderTasks()}lastToday=today;document.getElementById('todayDate').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}
+var lastToday=dateKey();
+document.addEventListener('visibilitychange',function(){if(!document.hidden)refreshTodayOnNewDay()});
+setInterval(refreshTodayOnNewDay,60000);
 
 function renderNotes(){
  document.getElementById('noteCount').textContent=notes.length?notes.length+' saved':'';
