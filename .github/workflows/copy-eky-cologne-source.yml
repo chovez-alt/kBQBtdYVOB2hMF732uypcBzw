@@ -1,0 +1,81 @@
+name: Copy EKY Cologne Source
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/copy-eky-cologne-source.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  copy-source:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Copy live EKY Cologne v191 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p eky-cologne-source/api
+          BASE='https://eky-cologne.vercel.app'
+          curl -fsSL "$BASE/" -o eky-cologne-source/index.html
+          curl -fsSL "$BASE/styles.css" -o eky-cologne-source/styles.css
+          curl -fsSL "$BASE/app.js" -o eky-cologne-source/app.js
+          curl -fsSL "$BASE/catalog.js" -o eky-cologne-source/catalog.js
+          curl -fsSL "$BASE/manifest.webmanifest" -o eky-cologne-source/manifest.webmanifest
+          curl -fsSL "$BASE/icon.svg" -o eky-cologne-source/icon.svg
+          curl -fsSL "$BASE/sw.js" -o eky-cologne-source/sw.js
+
+          cat > eky-cologne-source/api/mys-catalog.js <<'EOF'
+          module.exports = async function handler(req, res) {
+            if (req.method !== 'GET') {
+              res.status(405).json({ error: 'Method not allowed' });
+              return;
+            }
+            try {
+              const upstream = await fetch('https://eky-cologne.vercel.app/api/mys-catalog', {
+                headers: { accept: 'application/json' }
+              });
+              const body = await upstream.text();
+              res.statusCode = upstream.status;
+              res.setHeader('content-type', upstream.headers.get('content-type') || 'application/json');
+              res.send(body);
+            } catch (error) {
+              res.status(502).json({ error: 'Could not reach the MYS catalog source.' });
+            }
+          };
+          EOF
+
+          cat > eky-cologne-source/vercel.json <<'EOF'
+          {
+            "version": 2
+          }
+          EOF
+
+          cat > eky-cologne-source/README.md <<'EOF'
+          # EKY Cologne Source
+
+          Source snapshot copied from the live EKY Cologne v191 app on September 18, 2026.
+
+          This folder preserves the current app UI and behavior, including the 1,027-fragrance catalog, What's New review queue, Update Catalog workflow, Orders/inventory, Favorites, Stats, PWA manifest, icon, and service worker.
+
+          The `/api/mys-catalog` function is currently a compatibility bridge to the existing live EKY Cologne catalog API so Update Catalog and Update List continue to work when this folder is deployed as its own Vercel project.
+          EOF
+
+      - name: Commit source snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add eky-cologne-source
+          if git diff --cached --quiet; then
+            echo 'No source changes to commit.'
+          else
+            git commit -m 'Create EKY Cologne source snapshot'
+            git push
+          fi
