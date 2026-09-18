@@ -1,0 +1,17 @@
+{
+  "name": "EKY Cologne",
+  "short_name": "EKY Cologne",
+  "description": "MYS perfume and cologne inspiration finder",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f4f7fc",
+  "theme_color": "#1557d6",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

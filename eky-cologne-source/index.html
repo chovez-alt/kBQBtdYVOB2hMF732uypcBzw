@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1557d6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="EKY Cologne">
+<title>EKY Cologne</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app-shell">
+<header class="topbar">
+<div class="brand">
+<div class="logo">EKY</div>
+<div>
+<h1>EKY Cologne</h1>
+<p>MYS perfume & cologne finder</p>
+</div>
+</div>
+<button id="updateBtn" class="icon-btn" aria-label="Update app">↻ <span>Update App</span>
+</button>
+</header>
+<div id="offlineBanner" class="offline-banner hidden" role="status">Offline mode — catalog, inventory, tote locations, and sales are available.</div>
+<main>
+<section id="catalogTab" class="panel active">
+<div class="hero">
+<div>
+<span id="catalogMasterCount" class="eyebrow">1,027-FRAGRANCE CATALOG</span>
+<h2>Find what it’s inspired by.</h2>
+<p>Search by MYS name, original fragrance, or fragrance notes.</p>
+</div>
+<span class="version">v191</span>
+</div>
+<div class="search">
+<span>⌕</span>
+<input id="searchInput" type="search" placeholder="Search names or notes…">
+<button id="clearSearch">×</button>
+</div>
+<div class="search-scope" id="searchScope" aria-label="Choose what to search">
+<button class="scope-btn active" data-scope="all">All details</button>
+<button class="scope-btn" data-scope="mys">MYS name</button>
+<button class="scope-btn" data-scope="inspired">Inspired by</button>
+</div>
+<div class="filters" id="genderFilters">
+<button class="chip active" data-gender="All">All</button>
+<button class="chip" data-gender="Women">Women</button>
+<button class="chip" data-gender="Men">Men</button>
+<button class="chip" data-gender="Unisex">Unisex</button>
+<button class="chip" data-gender="Needs verification">Unresolved</button>
+</div>
+<div class="utility">
+<label>
+<input id="verifiedOnly" type="checkbox"> Verified only</label>
+<button id="inventoryFirstBtn" class="inventory-first active" type="button">Inventory First ✓</button>
+</div>
+<div class="sort-controls" id="catalogSort" aria-label="Choose catalog order">
+<button class="sort-choice active" data-sort="az">A–Z</button>
+<button class="sort-choice" data-sort="za">Z–A</button>
+<button class="sort-choice" data-sort="new-old">New–Old</button>
+<button class="sort-choice" data-sort="old-new">Old–New</button>
+<button class="sort-choice" data-sort="date-added">Date Added</button>
+<button class="sort-choice" data-sort="popular">Popular</button>
+</div>
+<div class="result-line">
+<span id="resultCount">
+</span>
+<button id="installBtn" class="link-btn">Add to Home Screen</button>
+</div>
+<div id="catalogList" class="list">
+</div>
+<div id="emptyState" class="empty hidden">
+<h3>No matches</h3>
+<p>Try the other search choice or use a shorter name.</p>
+</div>
+</section>
+<section id="newTab" class="panel">
+<div class="section-head">
+<div>
+<span class="eyebrow">REVIEW QUEUE</span>
+<h2>What’s New</h2>
+</div>
+<span id="newCount" class="badge">0</span>
+</div>
+<p class="new-intro">Tap Update Catalog to find new MYS fragrances, match them, and add verified ones. Only uncertain matches stay here.</p>
+<button id="autoCatalogBtn" class="update-list-btn auto-catalog-btn" type="button">↻ Update Catalog</button>
+<button id="copyUnverifiedBtn" class="copy-unverified-btn" type="button">Copy Unverified</button>
+<div class="paste-matches-box">
+<label for="pasteMatchesInput">Paste matched results</label>
+<textarea id="pasteMatchesInput" rows="5" placeholder="Paste the ChatGPT match results here…"></textarea>
+<button id="applyPastedMatchesBtn" class="apply-pasted-btn" type="button">✓ Apply Matches to Catalog</button>
+<div id="pasteMatchesStatus" class="paste-matches-status hidden" aria-live="polite"></div>
+</div>
+<div id="autoCatalogStatus" class="update-status hidden" aria-live="polite"></div>
+<div class="new-bulk-actions">
+<button id="verifyAllBtn" class="match-all-btn" type="button">✓ Verify All</button>
+<button id="addAllBtn" class="add-all-btn" type="button">＋ Add All</button>
+</div>
+<div class="search new-search">
+<span>⌕</span>
+<input id="newSearchInput" type="search" placeholder="Search new fragrances…">
+<button id="clearNewSearch" type="button">×</button>
+</div>
+<div class="filters" id="newGenderFilters">
+<button class="new-gender-btn active" data-new-gender="All">All</button>
+<button class="new-gender-btn" data-new-gender="Men">Men</button>
+<button class="new-gender-btn" data-new-gender="Women">Women</button>
+<button class="new-gender-btn" data-new-gender="Unisex">Unisex</button>
+</div>
+<div id="newList" class="new-list">
+</div>
+<div id="newEmpty" class="empty">
+<h3>No new fragrances waiting</h3>
+<p>Use Update List in Orders to check the MYS website.</p>
+</div>
+</section>
+<section id="ordersTab" class="panel">
+<div class="section-head">
+<div>
+<span class="eyebrow">STOCK & SALES</span>
+<h2>Orders</h2>
+</div>
+<button id="notifyBtn" class="text-btn">Enable alerts</button>
+</div>
+<div id="lowStockBanner" class="stock-alert hidden">
+</div>
+<div class="info">
+<div class="inventory-head">
+<div>
+<h3>Add inventory</h3>
+<p class="helper-text">Checks MYS for new colognes and fragrance notes.</p>
+</div>
+<button id="updateListBtn" class="update-list-btn" type="button">↻ Update List</button>
+</div>
+<div id="updateListStatus" class="update-status" aria-live="polite">Ready to check the MYS list.</div>
+<form id="inventoryForm" class="stock-form">
+<div class="combo-box" data-combo-box>
+<div class="combo-control">
+<input id="inventoryName" type="search" autocomplete="off" required placeholder="Type name or number…">
+<button class="combo-arrow" type="button" data-combo-arrow="inventoryName" aria-label="Show all colognes">▾</button>
+</div>
+<div id="inventoryMenu" class="combo-menu hidden">
+</div>
+</div>
+<input id="inventoryQty" type="number" min="1" value="1" required aria-label="Quantity">
+<input id="inventoryTote" class="tote-input" type="text" maxlength="20" autocomplete="off" placeholder="Tote A, B, 1…" aria-label="Storage tote">
+<button class="primary" type="submit">Add Stock</button>
+</form>
+</div>
+<div class="info">
+<div class="inventory-head">
+<h3>Inventory</h3>
+<span id="inventoryTotal" class="badge">0</span>
+</div>
+<div class="inventory-sort" aria-label="Sort inventory">
+<span>Sort:</span>
+<button id="inventorySortAZ" class="inventory-sort-btn active" type="button">A–Z</button>
+<button id="inventorySortZA" class="inventory-sort-btn" type="button">Z–A</button>
+</div>
+<div id="inventoryList" class="inventory-list">
+</div>
+<div id="inventoryEmpty" class="empty compact-empty">No inventory added yet.</div>
+</div>
+<div class="info sale-box">
+<h3>Record a sale</h3>
+<form id="saleForm" class="stock-form">
+<div class="combo-box" data-combo-box>
+<div class="combo-control">
+<input id="saleItem" type="search" autocomplete="off" required placeholder="Type sold cologne…">
+<button class="combo-arrow" type="button" data-combo-arrow="saleItem" aria-label="Show all colognes">▾</button>
+</div>
+<div id="saleMenu" class="combo-menu hidden">
+</div>
+</div>
+<input id="saleQty" type="number" min="1" value="1" required aria-label="Quantity sold">
+<button class="primary" type="submit">Save Sale & Deduct</button>
+</form>
+</div>
+<div class="info">
+<div class="inventory-head">
+<h3>Sales tracker</h3>
+<div class="range-toggle">
+<button class="range-btn active" data-range="week">Weekly</button>
+<button class="range-btn" data-range="month">Monthly</button>
+</div>
+</div>
+<div id="salesSummary" class="sales-summary">
+</div>
+<div id="salesRanking" class="ranking-list">
+</div>
+</div>
+<div class="info">
+<h3>Recent sales</h3>
+<div id="salesHistory" class="sales-history">
+</div>
+</div>
+<div class="info">
+<h3>Order more</h3>
+<p>Browse MYS fragrances and place your wholesale order.</p>
+<a class="primary order-link" href="https://myswholesale.com/collections/1016_perfumes" target="_blank" rel="noopener">Open MYS Perfume Collection</a>
+</div>
+</section>
+<section id="favoritesTab" class="panel">
+<div class="section-head">
+<div>
+<span class="eyebrow">SAVED</span>
+<h2>Favorites</h2>
+</div>
+<span id="favoriteCount" class="badge">0</span>
+</div>
+<div id="favoritesList" class="list">
+</div>
+<div id="favoritesEmpty" class="empty">
+<h3>No favorites yet</h3>
+<p>Tap the heart on any fragrance to save it.</p>
+</div>
+</section>
+<section id="statsTab" class="panel">
+<div class="section-head">
+<div>
+<span class="eyebrow">CATALOG</span>
+<h2>Stats</h2>
+</div>
+</div>
+<div id="statsGrid" class="stats">
+</div>
+<div class="info">
+<h3>Verification rule</h3>
+<p>Entries are shown as verified only when the master catalog contains a supported inspiration and the row is not marked as uncertain.</p>
+</div>
+</section>
+<section id="aboutTab" class="panel">
+<div class="section-head">
+<div>
+<span class="eyebrow">ABOUT</span>
+<h2>EKY Cologne</h2>
+</div>
+</div>
+<div class="info">
+<h3>Built from your MYS master catalog</h3>
+<p>The app starts with 1,027 catalog entries. <span id="aboutCatalogCount">
+</span> Approved updates, inventory, tote locations, and sales stay saved on this device.</p>
+</div>
+<div class="info">
+<h3>Offline use</h3>
+<p>After the first successful load, the catalog is cached so you can search it without a connection.</p>
+</div>
+<button id="shareBtn" class="primary">Share EKY Cologne</button>
+</section>
+</main>
+<nav class="bottom">
+<button class="nav active" data-tab="catalogTab">
+<b>⌕</b>
+<small>Catalog</small>
+</button>
+<button class="nav" data-tab="newTab">
+<b>✦</b>
+<small>What’s New</small>
+</button>
+<button class="nav" data-tab="ordersTab">
+<b>▤</b>
+<small>Orders</small>
+</button>
+<button class="nav" data-tab="favoritesTab">
+<b>♡</b>
+<small>Favorites</small>
+</button>
+<button class="nav" data-tab="statsTab">
+<b>▦</b>
+<small>Stats</small>
+</button>
+<button class="nav" data-tab="aboutTab">
+<b>i</b>
+<small>About</small>
+</button>
+</nav>
+</div>
+<div id="detailSheet" class="backdrop hidden">
+<div class="sheet">
+<div class="handle">
+</div>
+<button id="closeDetail" class="close">×</button>
+<div id="detailContent">
+</div>
+</div>
+</div>
+<div id="installSheet" class="backdrop hidden">
+<div class="sheet compact">
+<div class="handle">
+</div>
+<button id="closeInstall" class="close">×</button>
+<span class="eyebrow">IPHONE</span>
+<h2>Add EKY Cologne to Home Screen</h2>
+<ol>
+<li>Open EKY Cologne in Safari.</li>
+<li>Tap <b>Share</b>.</li>
+<li>Choose <b>Add to Home Screen</b>.</li>
+<li>Tap <b>Add</b>.</li>
+</ol>
+</div>
+</div>
+<div id="editInventorySheet" class="backdrop hidden">
+<div class="sheet compact">
+<div class="handle">
+</div>
+<button id="closeInventoryEdit" class="close" type="button" aria-label="Close inventory editor">×</button>
+<span class="eyebrow">INVENTORY</span>
+<h2>Edit inventory item</h2>
+<form id="editInventoryForm" class="edit-inventory-form">
+<label>Cologne name<input id="editInventoryName" type="text" maxlength="120" required></label>
+<label>Quantity<input id="editInventoryQty" type="number" min="0" required></label>
+<label>Tote location<input id="editInventoryTote" type="text" maxlength="20" placeholder="Tote A, B, 1…"></label>
+<button class="primary" type="submit">Save Changes</button>
+<button id="cancelInventoryEdit" class="secondary" type="button">Cancel</button>
+</form>
+</div>
+</div>
+<div id="quickSaleSheet" class="backdrop hidden">
+<div class="sheet compact">
+<div class="handle">
+</div>
+<button id="closeQuickSale" class="close" type="button" aria-label="Close sale quantity picker">×</button>
+<span class="eyebrow">QUICK SALE</span>
+<h2 id="quickSaleName">Record sale</h2>
+<p id="quickSaleAvailable" class="helper-text"></p>
+<form id="quickSaleForm" class="edit-inventory-form">
+<label>Quantity sold<input id="quickSaleQty" type="number" min="1" value="1" required></label>
+<button class="primary sell-confirm" type="submit">Complete Sale</button>
+<button id="cancelQuickSale" class="secondary" type="button">Cancel</button>
+</form>
+</div>
+</div>
+<div id="manualAddSheet" class="backdrop hidden">
+<div class="sheet compact">
+<div class="handle">
+</div>
+<button id="closeManualAdd" class="close" type="button" aria-label="Close manual fragrance form">×</button>
+<span class="eyebrow">MANUAL VERIFICATION</span>
+<h2 id="manualAddName">Add fragrance manually</h2>
+<form id="manualAddForm" class="edit-inventory-form">
+<label>Inspired by<input id="manualInspiredBy" type="text" maxlength="160" placeholder="Original fragrance name" required></label>
+<label>Fragrance notes<textarea id="manualNotes" rows="4" placeholder="Enter fragrance notes" required></textarea></label>
+<label>Gender<select id="manualGender"><option value="Men">Men</option><option value="Women">Women</option><option value="Unisex">Unisex</option></select></label>
+<button class="primary" type="submit">Verify & Add to Catalog</button>
+<button id="cancelManualAdd" class="secondary" type="button">Cancel</button>
+</form>
+</div>
+</div>
+<div id="toast" class="toast hidden">
+</div>
+<script src="catalog.js">
+</script>
+<script src="app.js">
+</script>
+</body>
+</html>
