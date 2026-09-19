@@ -1,4 +1,4 @@
-const CACHE='eky-cologne-v220-paste-matches';
+const CACHE='eky-cologne-v221-match-updated-catalog';
 const APP_SHELL=['./','index.html','styles.css','app.js','catalog.js','manifest.webmanifest','icon.svg'];
 
 self.addEventListener('install',event=>{
