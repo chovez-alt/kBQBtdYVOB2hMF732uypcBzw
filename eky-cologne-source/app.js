@@ -142,6 +142,20 @@ async function findVerifyAndAddNew(){
   }catch(error){status.className='update-status error';status.textContent='The catalog update could not finish. Your saved catalog was not changed.';toast('Catalog update could not finish')}
   finally{button.disabled=false;button.textContent='↻ Update Catalog'}
 }
+function matchUpdatedCatalogToWhatsNew(){
+  const button=document.querySelector('#matchUpdatedCatalogBtn'),status=document.querySelector('#matchUpdatedCatalogStatus'),waiting=pendingUpdates.filter(item=>!pendingVerified(item));
+  if(!waiting.length){status.className='update-status success';status.textContent='Everything in What’s New is already verified or added.';toast('No unverified fragrances are waiting');return}
+  button.disabled=true;button.textContent='Matching Catalog…';status.className='update-status';status.textContent='Matching every unverified fragrance to the updated main catalog…';
+  try{
+    const verifiedMaster=data.filter(item=>item.status==='Verified'&&pendingReady(item)),verifiedNames=catalogNameSet(verifiedMaster);let alreadyInCatalog=0;
+    pendingUpdates=pendingUpdates.filter(item=>{if(!pendingVerified(item)&&nameInCatalogSet(verifiedNames,item.name)){alreadyInCatalog++;return false}return true});
+    if(alreadyInCatalog)savePending();
+    const matched=verifyAllPending(true),added=addAllPending(true,true),remaining=pendingUpdates.filter(item=>!pendingVerified(item)).length;
+    status.className='update-status success';status.textContent=`Updated catalog checked · Matched ${matched} · Added ${added} · Removed ${alreadyInCatalog} already in catalog · ${remaining} still unverified`;
+    toast(added||alreadyInCatalog?(added+alreadyInCatalog)+' fragrance'+(added+alreadyInCatalog===1?'':'s')+' cleared from What’s New':'No new verified matches found');
+  }catch(error){status.className='update-status error';status.textContent='The updated catalog could not be matched. Nothing was removed.';toast('Catalog matching could not finish')}
+  finally{button.disabled=false;button.textContent='✓ Match Updated Catalog';renderWhatsNew()}
+}
 function openManualAdd(sourceId){const item=pendingUpdates.find(entry=>String(entry.sourceId||canonicalName(entry.name))===String(sourceId));if(!item)return;manualSourceId=String(sourceId);document.querySelector('#manualAddName').textContent=item.name;document.querySelector('#manualInspiredBy').value=pendingReady(item)?item.inspiredBy.replace(/^Possible match:\s*/i,''):'';document.querySelector('#manualNotes').value=/^MYS has not posted/i.test(item.notes||'')?'':item.notes||'';document.querySelector('#manualGender').value=['Men','Women','Unisex'].includes(item.gender)?item.gender:'Unisex';document.querySelector('#manualAddSheet').classList.remove('hidden')}
 function closeManualAdd(){manualSourceId=null;document.querySelector('#manualAddSheet').classList.add('hidden')}
 function searchWithChatGPT(sourceId){const item=pendingUpdates.find(entry=>String(entry.sourceId||canonicalName(entry.name))===String(sourceId));if(!item)return;if(!navigator.onLine){toast('Connect to the internet to search ChatGPT');return}const prompt=`Help me verify which original fragrance this MYS Wholesale perfume is inspired by. Search reliable fragrance sources and compare the name, gender, and notes. Do not guess if the evidence is weak.\n\nMYS name: ${item.name}\nGender: ${item.gender||'Unisex'}\nFragrance notes: ${item.notes||'No notes posted'}\nMYS product: ${item.sourceUrl||'Not available'}\n\nReturn exactly:\nInspired by: [brand and fragrance]\nConfidence: [High, Medium, or Low]\nReason: [short explanation]\nNotes to save: [clean fragrance notes]`;const url='https://chatgpt.com/?q='+encodeURIComponent(prompt);window.open(url,'_blank','noopener');if(navigator.clipboard?.writeText)navigator.clipboard.writeText(prompt).then(()=>toast('ChatGPT opened — paste the copied prompt if needed')).catch(()=>toast('ChatGPT opened'));else toast('ChatGPT opened')}
@@ -155,6 +169,7 @@ function setupNewControls(){
   document.querySelectorAll('[data-new-gender]').forEach(button=>button.onclick=()=>{document.querySelectorAll('[data-new-gender]').forEach(item=>item.classList.remove('active'));button.classList.add('active');newGender=button.dataset.newGender;renderWhatsNew()});
   document.querySelector('#newList').onclick=event=>{const add=event.target.closest('[data-add-source]'),manual=event.target.closest('[data-manual-source]'),chat=event.target.closest('[data-chat-source]');if(add)addPendingToCatalog(add.dataset.addSource);if(manual)openManualAdd(decodeURIComponent(manual.dataset.manualSource));if(chat)searchWithChatGPT(decodeURIComponent(chat.dataset.chatSource))};
   document.querySelector('#autoCatalogBtn').onclick=findVerifyAndAddNew;
+  document.querySelector('#matchUpdatedCatalogBtn').onclick=matchUpdatedCatalogToWhatsNew;
   document.querySelector('#copyUnverifiedBtn').onclick=copyUnverified;
   document.querySelector('#applyPastedMatchesBtn').onclick=applyPastedMatches;
   document.querySelector('#verifyAllBtn').onclick=()=>verifyAllPending(false);
