@@ -34,7 +34,7 @@
 <h2>Find what it’s inspired by.</h2>
 <p>Search by MYS name, original fragrance, or fragrance notes.</p>
 </div>
-<span class="version">v191.1</span>
+<span class="version">v191.2</span>
 </div>
 <div class="search">
 <span>⌕</span>
@@ -340,14 +340,14 @@
 <div class="sheet compact">
 <div class="handle">
 </div>
-<button id="closeManualAdd" class="close" type="button" aria-label="Close manual fragrance form">×</button>
-<span class="eyebrow">MANUAL VERIFICATION</span>
-<h2 id="manualAddName">Add fragrance manually</h2>
+<button id="closeManualAdd" class="close" type="button" aria-label="Close pasted fragrance information">×</button>
+<span class="eyebrow">PASTE VERIFICATION</span>
+<h2 id="manualAddName">Paste fragrance information</h2>
 <form id="manualAddForm" class="edit-inventory-form">
-<label>Inspired by<input id="manualInspiredBy" type="text" maxlength="160" placeholder="Original fragrance name" required></label>
-<label>Fragrance notes<textarea id="manualNotes" rows="4" placeholder="Enter fragrance notes" required></textarea></label>
-<label>Gender<select id="manualGender"><option value="Men">Men</option><option value="Women">Women</option><option value="Unisex">Unisex</option></select></label>
-<button class="primary" type="submit">Verify & Add to Catalog</button>
+<p class="helper-text">Paste the ChatGPT result. Inspiration, notes, gender, confidence, reason, and source link will be saved in the correct places.</p>
+<label>Paste fragrance details<textarea id="manualPasteInput" rows="10" placeholder="Inspired by: Brand and fragrance&#10;Confidence: High or Medium&#10;Reason: Why it matches&#10;Notes to save: Fragrance notes&#10;Gender: Men, Women, or Unisex"></textarea></label>
+<div id="manualPasteStatus" class="paste-matches-status hidden" aria-live="polite"></div>
+<button class="primary" type="submit">Paste & Add to Catalog</button>
 <button id="cancelManualAdd" class="secondary" type="button">Cancel</button>
 </form>
 </div>
