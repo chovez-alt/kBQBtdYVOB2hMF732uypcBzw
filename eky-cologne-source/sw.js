@@ -1,5 +1,5 @@
-const CACHE='eky-cologne-v222-paste-fragrance-details';
-const APP_SHELL=['./','index.html','styles.css','app.js','catalog.js','manifest.webmanifest','icon.svg'];
+const CACHE='eky-cologne-v223-paste-cache-fix';
+const APP_SHELL=['./','index.html','styles.css?v=191.3','app.js?v=191.3','catalog.js','manifest.webmanifest','icon.svg'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(APP_SHELL)).then(()=>self.skipWaiting()));
