@@ -15,6 +15,7 @@ EKY Cologne is an installable phone-friendly PWA built from the MYS Wholesale ma
 - Quick Sell button on every inventory row with a quantity picker
 - What’s New review queue and live MYS list updater
 - Match Updated Catalog button that checks every unverified What’s New item, adds confirmed matches, and leaves uncertain items for review
+- Per-fragrance Paste button that maps ChatGPT inspiration, notes, gender, confidence, reason, and source into the catalog entry
 - Verify All matching, verified-only Add All, and manual verification controls
 - Search ChatGPT handoff for unverified fragrance matching
 - Search All ChatGPT and bulk result import matched by source ID
