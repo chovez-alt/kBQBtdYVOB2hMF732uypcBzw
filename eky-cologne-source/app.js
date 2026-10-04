@@ -1,6 +1,8 @@
 const data=window.MYS_CATALOG||[];let gender='All',sortMode='az',searchScope='all',inventoryFirst=true;const q=document.querySelector('#searchInput');const list=document.querySelector('#catalogList');const favs=new Set(JSON.parse(localStorage.getItem('eky-cologne-favorites')||'[]'));const esc=s=>(s??'').toString().replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[m]));function genderMatch(x){if(gender==='All')return true;if(gender==='Needs verification')return x.status==='Needs verification';return x.gender.toLowerCase().includes(gender.toLowerCase())}function searchableText(x){if(searchScope==='mys')return x.name||'';if(searchScope==='inspired')return x.inspiredBy||'';return [x.name,x.inspiredBy,x.notes].join(' ')}function saleCount(name){return sales.filter(s=>normalizeName(s.name)===normalizeName(name)).reduce((total,s)=>total+(+s.qty||0),0)}function catalogDate(item,kind){if(kind==='date-added')return +item.addedAt||0;const published=Date.parse(item.publishedAt||'');return Number.isFinite(published)?published:(+item.no||0)}function filtered(){const term=q.value.trim().toLowerCase();let a=data.filter(x=>genderMatch(x)&&(!document.querySelector('#verifiedOnly').checked||x.status==='Verified')&&(!term||searchableText(x).toLowerCase().includes(term)));a.sort((left,right)=>{if(inventoryFirst){const stockDifference=Number(stockForName(displayName(right))>0)-Number(stockForName(displayName(left))>0);if(stockDifference)return stockDifference}if(sortMode==='za')return displayName(right).localeCompare(displayName(left));if(sortMode==='new-old')return catalogDate(right,'published')-catalogDate(left,'published')||displayName(left).localeCompare(displayName(right));if(sortMode==='old-new')return catalogDate(left,'published')-catalogDate(right,'published')||displayName(left).localeCompare(displayName(right));if(sortMode==='date-added')return catalogDate(right,'date-added')-catalogDate(left,'date-added')||displayName(left).localeCompare(displayName(right));if(sortMode==='popular')return saleCount(displayName(right))-saleCount(displayName(left))||displayName(left).localeCompare(displayName(right));return displayName(left).localeCompare(displayName(right))});return a}function displayName(x){return (x.name||'').trim()||`Unresolved MYS item #${x.no}`}function card(x){return `<article class="card" data-no="${x.no}"><div><div class="detail-no">#${x.no}</div><h3>${esc(displayName(x))}</h3><div class="inspired">${esc(x.inspiredBy||'Inspiration unresolved')}</div><div class="card-stock ${stockForName(displayName(x))<=3?'low':''}">Inventory: <b>${stockForName(displayName(x))}</b></div><div class="meta"><span class="pill">${esc(x.gender)}</span><span class="pill ${x.status==='Verified'?'verified':'unresolved'}">${x.status}</span></div></div><button class="fav" data-fav="${x.no}">${favs.has(x.no)?'♥':'♡'}</button></article>`}function render(){const a=filtered();document.querySelector('#resultCount').textContent=`${a.length} fragrance${a.length===1?'':'s'}`;list.innerHTML=a.map(card).join('');document.querySelector('#emptyState').classList.toggle('hidden',a.length>0);bindCards();renderFavs();renderStats();renderCatalogMeta()}function bindCards(){document.querySelectorAll('.card').forEach(el=>el.addEventListener('click',e=>{if(e.target.closest('[data-fav]'))return;showDetail(+el.dataset.no)}));document.querySelectorAll('[data-fav]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();toggleFav(+b.dataset.fav)}))}function toggleFav(no){favs.has(no)?favs.delete(no):favs.add(no);localStorage.setItem('eky-cologne-favorites',JSON.stringify([...favs]));render()}function renderFavs(){const arr=data.filter(x=>favs.has(x.no));document.querySelector('#favoritesList').innerHTML=arr.map(card).join('');document.querySelector('#favoriteCount').textContent=arr.length;document.querySelector('#favoritesEmpty').classList.toggle('hidden',arr.length>0)}function renderStats(){const stats={Total:data.length,Women:data.filter(x=>x.gender.toLowerCase().includes('women')).length,Men:data.filter(x=>x.gender.toLowerCase().includes('men')&&!x.gender.toLowerCase().includes('women')).length,Unisex:data.filter(x=>x.gender.toLowerCase().includes('unisex')).length,Verified:data.filter(x=>x.status==='Verified').length,Unresolved:data.filter(x=>x.status!=='Verified').length};document.querySelector('#statsGrid').innerHTML=Object.entries(stats).map(([k,v])=>`<div class="stat"><strong>${v}</strong><span>${k}</span></div>`).join('')}function showDetail(no){const x=data.find(y=>y.no===no);document.querySelector('#detailContent').innerHTML=`<div class="detail-no">CATALOG #${x.no}</div><h2 class="detail-title">${esc(displayName(x))}</h2><div class="detail-original">${esc(x.inspiredBy||'Inspiration unresolved')}</div><div class="detail-stock">Inventory: <b>${stockForName(displayName(x))}</b></div><div class="meta"><span class="pill">${esc(x.gender)}</span><span class="pill ${x.status==='Verified'?'verified':'unresolved'}">${x.status}</span></div><div class="notes"><b>Fragrance notes</b><br>${esc(x.notes||'No notes recorded yet.')}</div>`;document.querySelector('#detailSheet').classList.remove('hidden')}q.addEventListener('input',render);document.querySelector('#clearSearch').onclick=()=>{q.value='';render();q.focus()};document.querySelectorAll('.scope-btn').forEach(b=>b.onclick=()=>{document.querySelectorAll('.scope-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');searchScope=b.dataset.scope;q.placeholder=searchScope==='mys'?'Search MYS name…':searchScope==='inspired'?'Search original fragrance…':'Search names or notes…';render();q.focus()});document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));b.classList.add('active');gender=b.dataset.gender;render()});document.querySelector('#verifiedOnly').onchange=render;document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelector('#'+b.dataset.tab).classList.add('active');window.scrollTo(0,0);renderFavs()});document.querySelector('#closeDetail').onclick=()=>document.querySelector('#detailSheet').classList.add('hidden');document.querySelector('#detailSheet').onclick=e=>{if(e.target.id==='detailSheet')e.target.classList.add('hidden')};document.querySelector('#installBtn').onclick=()=>document.querySelector('#installSheet').classList.remove('hidden');document.querySelector('#closeInstall').onclick=()=>document.querySelector('#installSheet').classList.add('hidden');document.querySelector('#installSheet').onclick=e=>{if(e.target.id==='installSheet')e.target.classList.add('hidden')};function toast(t){const e=document.querySelector('#toast');e.textContent=t;e.classList.remove('hidden');setTimeout(()=>e.classList.add('hidden'),1800)}document.querySelector('#updateBtn').onclick=async()=>{toast('Updating EKY Cologne…');try{if('caches'in window){const keys=await caches.keys();await Promise.all(keys.map(k=>caches.delete(k)))}if('serviceWorker'in navigator){const regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.map(r=>r.unregister()))}const next=new URL(location.href);next.searchParams.set('updated',Date.now());setTimeout(()=>location.replace(next.href),250)}catch(e){location.reload()}};document.querySelector('#shareBtn').onclick=async()=>{const s={title:'EKY Cologne',text:'EKY Cologne — MYS perfume and cologne finder',url:location.href};if(navigator.share)await navigator.share(s);else{await navigator.clipboard.writeText(location.href);toast('App link copied')}};if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js'));
 const INVENTORY_KEY='eky-cologne-inventory-v1',SALES_KEY='eky-cologne-sales-v1',CUSTOM_KEY='eky-cologne-custom-list-v1',LEGACY_UPDATE_KEY='eky-cologne-site-updates-v1',PENDING_KEY='eky-cologne-new-fragrances-v1',APPROVED_KEY='eky-cologne-approved-updates-v1',MIGRATION_KEY='eky-cologne-v184-migrated',RESTORE_NEW_KEY='eky-cologne-v170-whats-new-restored';
+const BARCODE_MAP_KEY='eky-cologne-barcode-map-v1',BARCODE_HISTORY_KEY='eky-cologne-barcode-history-v1';
 let inventory=JSON.parse(localStorage.getItem(INVENTORY_KEY)||'[]'),sales=JSON.parse(localStorage.getItem(SALES_KEY)||'[]'),customNames=JSON.parse(localStorage.getItem(CUSTOM_KEY)||'[]'),legacyUpdates=JSON.parse(localStorage.getItem(LEGACY_UPDATE_KEY)||'[]'),pendingUpdates=JSON.parse(localStorage.getItem(PENDING_KEY)||'[]'),approvedUpdates=JSON.parse(localStorage.getItem(APPROVED_KEY)||'[]'),salesRange='week',newGender='All',inventorySort='az',editingInventoryId=null,sellingInventoryId=null,manualSourceId=null;
+let barcodeMap=JSON.parse(localStorage.getItem(BARCODE_MAP_KEY)||'{}'),barcodeHistory=JSON.parse(localStorage.getItem(BARCODE_HISTORY_KEY)||'[]'),barcodeScanner=null,barcodeScannerRunning=false,currentBarcode='';
 const saveStock=()=>localStorage.setItem(INVENTORY_KEY,JSON.stringify(inventory));
 const saveSales=()=>localStorage.setItem(SALES_KEY,JSON.stringify(sales));
 function stockForName(name){const item=inventory.find(x=>x.name.toLowerCase()===String(name).toLowerCase());return item?item.qty:0}
@@ -224,9 +226,81 @@ document.querySelector('#inventorySortZA').onclick=()=>{inventorySort='za';docum
 document.querySelector('#saleForm').onsubmit=e=>{e.preventDefault();const soldName=document.querySelector('#saleItem').value,item=inventory.find(x=>x.name.toLowerCase()===soldName.toLowerCase()),qty=Math.max(1,+document.querySelector('#saleQty').value||1);if(!item)return;if(recordSale(item,qty))document.querySelector('#saleQty').value=1};
 document.querySelectorAll('.range-btn').forEach(b=>b.onclick=()=>{document.querySelectorAll('.range-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');salesRange=b.dataset.range;renderSales()});
 document.querySelector('#notifyBtn').onclick=async()=>{if(!('Notification'in window)){toast('Notifications are not supported on this device');return}const permission=await Notification.requestPermission();toast(permission==='granted'?'Low-stock alerts enabled':'Notifications were not enabled')};
+
+function saveBarcodeMap(){localStorage.setItem(BARCODE_MAP_KEY,JSON.stringify(barcodeMap))}
+function saveBarcodeHistory(){localStorage.setItem(BARCODE_HISTORY_KEY,JSON.stringify(barcodeHistory.slice(0,250)))}
+function normalizeBarcode(value){return String(value||'').replace(/[^0-9A-Za-z]/g,'').trim()}
+function ensureBarcodeOptions(){const list=document.querySelector('#barcodeCologneOptions');if(!list)return;list.innerHTML=allProductNames().map(name=>'<option value="'+esc(name)+'"></option>').join('')}
+function barcodeInventoryItem(name){return inventory.find(x=>normalizeName(x.name)===normalizeName(name))}
+function renderBarcodeData(){
+  const entries=Object.entries(barcodeMap).sort((a,b)=>String(a[1].name||'').localeCompare(String(b[1].name||'')));
+  const count=document.querySelector('#barcodeMapCount'),known=document.querySelector('#barcodeKnownCount'),mapList=document.querySelector('#barcodeMapList'),empty=document.querySelector('#barcodeMapEmpty'),history=document.querySelector('#barcodeHistory');
+  if(count)count.textContent=entries.length;if(known)known.textContent=entries.length;
+  if(mapList)mapList.innerHTML=entries.map(([code,item])=>'<div class="barcode-map-row"><div><strong>'+esc(item.name)+'</strong><small>'+esc(code)+'</small></div><button class="text-btn" type="button" data-barcode-edit="'+esc(code)+'">Edit</button></div>').join('');
+  if(empty)empty.classList.toggle('hidden',entries.length>0);
+  if(history)history.innerHTML=barcodeHistory.length?barcodeHistory.slice(0,30).map(row=>'<div class="sale-row"><div><b>'+esc(row.name)+'</b><br><small>'+esc(row.code)+' · '+new Date(row.time).toLocaleString()+'</small></div><strong>'+(row.action==='in'?'+1 IN':'−1 OUT')+'</strong></div>').join(''):'<div class="empty compact-empty">No barcode scans recorded yet.</div>';
+  ensureBarcodeOptions();
+}
+function openBarcodeAction(rawCode){
+  const code=normalizeBarcode(rawCode);if(!code)return;
+  currentBarcode=code;const saved=barcodeMap[code],input=document.querySelector('#barcodeCologneInput'),forget=document.querySelector('#forgetBarcodeBtn');
+  document.querySelector('#barcodeActionCode').textContent=code;
+  document.querySelector('#barcodeActionHint').textContent=saved?'This barcode is remembered as '+saved.name+'. Choose IN or OUT.':'First scan for this barcode — choose which cologne it belongs to.';
+  input.value=saved?.name||'';forget.classList.toggle('hidden',!saved);
+  document.querySelector('#barcodeActionSheet').classList.remove('hidden');setTimeout(()=>input.focus(),80);
+}
+function closeBarcodeAction(){document.querySelector('#barcodeActionSheet').classList.add('hidden');currentBarcode=''}
+function applyBarcodeStock(action){
+  const code=currentBarcode,name=document.querySelector('#barcodeCologneInput').value.trim();if(!code||!name){toast('Choose a cologne for this barcode');return}
+  const valid=allProductNames().some(x=>normalizeName(x)===normalizeName(name));if(!valid){toast('Choose a cologne from the catalog');return}
+  barcodeMap[code]={name,updatedAt:Date.now()};saveBarcodeMap();
+  let item=barcodeInventoryItem(name);
+  if(action==='in'){
+    if(!item){item={id:Date.now().toString(36)+Math.random().toString(36).slice(2),name,qty:0,tote:''};inventory.push(item)}
+    item.qty=(+item.qty||0)+1;
+  }else{
+    if(!item||(+item.qty||0)<1){toast(name+' has no stock to remove');renderBarcodeData();return}
+    item.qty=Math.max(0,(+item.qty||0)-1);
+  }
+  barcodeHistory.unshift({code,name,action,time:Date.now()});saveBarcodeHistory();saveStock();renderInventory();render();renderBarcodeData();closeBarcodeAction();toast(name+(action==='in'?' added to stock':' removed from stock'));
+}
+async function startBarcodeScanner(){
+  const status=document.querySelector('#scannerStatus'),start=document.querySelector('#startScannerBtn'),stop=document.querySelector('#stopScannerBtn');
+  if(barcodeScannerRunning)return;
+  if(typeof Html5Qrcode==='undefined'){status.className='update-status error';status.textContent='Camera scanner could not load. Use the barcode box below.';return}
+  try{
+    barcodeScanner=new Html5Qrcode('barcodeReader');
+    barcodeScannerRunning=true;start.classList.add('hidden');stop.classList.remove('hidden');status.className='update-status';status.textContent='Point the camera at a UPC or barcode…';
+    const formats=[Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.UPC_A,Html5QrcodeSupportedFormats.UPC_E,Html5QrcodeSupportedFormats.CODE_128,Html5QrcodeSupportedFormats.CODE_39];
+    await barcodeScanner.start({facingMode:'environment'},{fps:12,qrbox:{width:280,height:140},formatsToSupport:formats},async decoded=>{
+      if(!barcodeScannerRunning)return;status.textContent='Barcode found: '+decoded;await stopBarcodeScanner();openBarcodeAction(decoded);
+    },()=>{});
+  }catch(error){
+    barcodeScannerRunning=false;start.classList.remove('hidden');stop.classList.add('hidden');status.className='update-status error';status.textContent='Camera could not start. Allow camera access or enter the barcode below.';
+    try{if(barcodeScanner){await barcodeScanner.clear()}}catch(e){} barcodeScanner=null;
+  }
+}
+async function stopBarcodeScanner(){
+  const start=document.querySelector('#startScannerBtn'),stop=document.querySelector('#stopScannerBtn'),status=document.querySelector('#scannerStatus');
+  try{if(barcodeScanner&&barcodeScannerRunning)await barcodeScanner.stop()}catch(e){}
+  try{if(barcodeScanner)await barcodeScanner.clear()}catch(e){}
+  barcodeScanner=null;barcodeScannerRunning=false;if(start)start.classList.remove('hidden');if(stop)stop.classList.add('hidden');if(status){status.className='update-status';status.textContent='Ready to scan.'}
+}
+document.querySelector('#startScannerBtn').onclick=startBarcodeScanner;
+document.querySelector('#stopScannerBtn').onclick=stopBarcodeScanner;
+document.querySelector('#manualBarcodeBtn').onclick=()=>{const input=document.querySelector('#manualBarcodeInput'),code=normalizeBarcode(input.value);if(!code){toast('Enter a barcode number');return}input.value='';openBarcodeAction(code)};
+document.querySelector('#manualBarcodeInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();document.querySelector('#manualBarcodeBtn').click()}});
+document.querySelector('#barcodeInBtn').onclick=()=>applyBarcodeStock('in');
+document.querySelector('#barcodeOutBtn').onclick=()=>applyBarcodeStock('out');
+document.querySelector('#closeBarcodeAction').onclick=closeBarcodeAction;
+document.querySelector('#barcodeActionSheet').onclick=e=>{if(e.target.id==='barcodeActionSheet')closeBarcodeAction()};
+document.querySelector('#forgetBarcodeBtn').onclick=()=>{if(!currentBarcode)return;const old=barcodeMap[currentBarcode];delete barcodeMap[currentBarcode];saveBarcodeMap();document.querySelector('#barcodeCologneInput').value='';document.querySelector('#forgetBarcodeBtn').classList.add('hidden');document.querySelector('#barcodeActionHint').textContent='Barcode forgotten. Choose a cologne to assign it again.';renderBarcodeData();toast(old?'Barcode forgotten':'Barcode cleared')};
+document.querySelector('#barcodeMapList').onclick=e=>{const btn=e.target.closest('[data-barcode-edit]');if(btn)openBarcodeAction(btn.dataset.barcodeEdit)};
+
 function updateOnlineStatus(){const offline=!navigator.onLine,banner=document.querySelector('#offlineBanner');banner.classList.toggle('hidden',!offline);document.querySelector('#updateListBtn').title=offline?'Connect to the internet to check MYS for new fragrances.':''}
 window.addEventListener('online',()=>{updateOnlineStatus();toast('Back online')});
 window.addEventListener('offline',()=>{updateOnlineStatus();toast('Offline mode is ready')});
 updateOnlineStatus();
 renderInventory();
+renderBarcodeData();
 render();
