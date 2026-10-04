@@ -1,5 +1,5 @@
-const CACHE='eky-cologne-v191-scanner-1';
-const APP_SHELL=['./','index.html','styles.css','app.js','scanner.js','catalog.js','manifest.webmanifest','icon.svg'];
+const CACHE='eky-cologne-v191-scanner-2';
+const APP_SHELL=['./','index.html','styles.css','app.js','scanner.js','barcode-reader.min.js','catalog.js','manifest.webmanifest','icon.svg'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(APP_SHELL)).then(()=>self.skipWaiting()));

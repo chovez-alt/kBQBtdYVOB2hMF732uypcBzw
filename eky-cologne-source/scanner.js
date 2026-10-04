@@ -2,7 +2,7 @@
   const $ = id => document.getElementById(id);
   const MAP = 'eky-cologne-barcode-map-v1', HISTORY = 'eky-cologne-barcode-history-v1';
   const read = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch { return fallback; } };
-  let map = read(MAP, {}), history = read(HISTORY, []), code = '', selected = '', scanner = null, starting = false, busy = false;
+  let map = read(MAP, {}), history = read(HISTORY, []), code = '', selected = '', scanner = null, starting = false, busy = false, running = false, paused = false, wantsCamera = true, generation = 0, resumeTimer = null, lastCode = '', lastScanAt = 0;
   const names = () => allProductNames();
   const message = text => { $('scannerMessage').textContent = text; };
   const save = () => { localStorage.setItem(MAP, JSON.stringify(map)); localStorage.setItem(HISTORY, JSON.stringify(history)); };
@@ -17,6 +17,7 @@
     $('barcodeChoices').classList.remove('hidden');
   }
   function open(raw) {
+    if(running && !paused){try{scanner.pause();paused=true;}catch{}}
     code = String(raw || '').trim();
     if(!code || code.length>128){message('Enter a valid barcode.');return;}
     selected = map[code]?.name || '';
@@ -28,7 +29,16 @@
     $('barcodeForget').classList.toggle('hidden', !map[code]);
     if(!selected)renderChoices();
   }
-  function close() { $('barcodeAction').classList.add('hidden'); code=''; selected=''; }
+  function close() {
+    $('barcodeAction').classList.add('hidden'); code=''; selected='';
+    clearTimeout(resumeTimer);
+    resumeTimer=setTimeout(()=>{
+      if(!wantsCamera||!active()||document.hidden||code)return;
+      if(scanner&&running&&paused){try{scanner.resume();paused=false;message('Scanning automatically — point at the next barcode.');}catch{stop(false).then(start);}}
+      else if(!scanner)start();
+    },1400);
+  }
+  function active(){return $('scannerTab').classList.contains('active');} 
   function chosen() {
     const value=$('barcodeCologne').value.trim();
     return names().find(name=>name.toLowerCase()===value.toLowerCase());
@@ -55,26 +65,41 @@
       $('barcodeHint').textContent='Could not save. Free some device storage and try again.';
     } finally {busy=false;}
   }
-  async function stop() {
-    if(scanner){try{await scanner.stop();}catch{}try{scanner.clear();}catch{}scanner=null;}
-    $('scanStart').disabled=false;$('scanStop').classList.add('hidden');
+  async function stop(userStop=false) {
+    if(userStop)wantsCamera=false;
+    generation++;clearTimeout(resumeTimer);
+    const old=scanner;scanner=null;running=false;paused=false;
+    if(old){try{await old.stop();}catch{}try{old.clear();}catch{}}
+    $('scanStart').disabled=false;$('scanStart').textContent='Start Barcode Scanner';$('scanStop').classList.add('hidden');
+    if(userStop)message('Camera stopped. Tap Start to scan again.');
   }
   async function start() {
-    if(starting||scanner)return;starting=true;$('scanStart').disabled=true;
+    if(starting||scanner||!wantsCamera||!active()||document.hidden||code)return;
+    starting=true;const ticket=++generation;$('scanStart').disabled=true;message('Opening rear camera…');
+    let reader;
     try {
-      if(!window.Html5Qrcode){
-        message('Loading camera scanner…');
-        await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';s.onload=resolve;s.onerror=reject;document.head.appendChild(s);});
+      if(!window.Html5Qrcode)throw new Error('reader-unavailable');
+      const f=window.Html5QrcodeSupportedFormats;
+      reader=new Html5Qrcode('scannerCamera',{formatsToSupport:[f.EAN_13,f.EAN_8,f.UPC_A,f.UPC_E,f.CODE_128,f.CODE_39,f.ITF,f.CODABAR],verbose:false});
+      scanner=reader;
+      await reader.start({facingMode:'environment'},{fps:12,disableFlip:true},value=>{
+        if(ticket!==generation||code||paused||!active())return;
+        const now=Date.now();if(value===lastCode&&now-lastScanAt<2000)return;
+        lastCode=value;lastScanAt=now;open(value);message('Barcode found. Choose IN STOCK or OUT OF STOCK.');
+      },()=>{});
+      if(ticket!==generation||!wantsCamera||!active()||document.hidden){try{await reader.stop();reader.clear();}catch{}return;}
+      running=true;$('scanStart').textContent='Camera scanning';$('scanStop').classList.remove('hidden');
+      message('Scanning automatically — point the camera at a barcode.');
+    } catch(error) {
+      if(ticket===generation){
+        await stop(false);
+        const reason=String(error?.name||error||'');
+        message(reason.includes('reader-unavailable')?'Camera reader did not load. Tap Update App, then try again.':reason.includes('NotAllowed')||reason.includes('Permission')?'Camera permission is needed. Allow camera access, then tap Start Scanner.':reason.includes('NotFound')?'No camera found. Enter a barcode below.':'Camera could not open. Tap Start Scanner to retry, or enter a barcode below.');
       }
-      scanner=new Html5Qrcode('scannerCamera');
-      let detected=false;
-      await scanner.start({facingMode:'environment'},{fps:10,qrbox:(w,h)=>({width:Math.floor(Math.min(w*.85,280)),height:Math.floor(Math.min(h*.7,140))})},async value=>{if(detected)return;detected=true;await stop();open(value);},()=>{});
-      message('Point the camera at the bottle barcode.');$('scanStop').classList.remove('hidden');
-    } catch(error) { await stop();message('Camera could not start. Allow camera access or enter the barcode below.'); }
-    finally{starting=false;}
+    } finally{starting=false;}
   }
-  $('scanStart').onclick=start;$('scanStop').onclick=stop;
-  $('manualBarcodeForm').onsubmit=e=>{e.preventDefault();const value=$('manualBarcode').value;stop();open(value);$('manualBarcode').value='';};
+  $('scanStart').onclick=()=>{wantsCamera=true;start();};$('scanStop').onclick=()=>stop(true);
+  $('manualBarcodeForm').onsubmit=e=>{e.preventDefault();const value=$('manualBarcode').value;open(value);$('manualBarcode').value='';};
   $('barcodeClose').onclick=close;$('barcodeAction').onclick=e=>{if(e.target===$('barcodeAction'))close();};
   $('barcodeIn').onclick=()=>apply('in');$('barcodeOut').onclick=()=>apply('out');
   $('barcodeCologne').oninput=()=>{selected='';renderChoices();};$('barcodeCologne').onfocus=renderChoices;
@@ -82,7 +107,8 @@
   $('barcodeMappings').onclick=e=>{const b=e.target.closest('[data-code]');if(b)open(b.dataset.code);};
   $('barcodeSaveAssignment').onclick=()=>{const name=chosen();if(!name){renderChoices();return;}try{map[code]={name,updatedAt:Date.now()};save();renderSaved();close();message('Barcode assignment saved.');}catch{$('barcodeHint').textContent='Could not save assignment.';}};
   $('barcodeForget').onclick=()=>{if(!confirm('Forget this barcode assignment?'))return;delete map[code];save();renderSaved();close();};
-  document.querySelectorAll('.nav').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.tab!=='scannerTab')stop();else renderSaved();}));
-  document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
+  document.querySelectorAll('.nav').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.tab!=='scannerTab')stop(false);else{wantsCamera=true;renderSaved();start();}}));
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)stop(false);else if(active()&&wantsCamera)start();});
   renderSaved();
+  start();
 })();
