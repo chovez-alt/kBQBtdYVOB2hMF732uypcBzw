@@ -10,7 +10,7 @@
 <title>EKY Cologne</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon.svg">
-<link rel="stylesheet" href="styles.css?v=191.3">
+<link rel="stylesheet" href="styles.css?v=192.0">
 </head>
 <body>
 <div class="app-shell">
@@ -27,14 +27,52 @@
 </header>
 <div id="offlineBanner" class="offline-banner hidden" role="status">Offline mode — catalog, inventory, tote locations, and sales are available.</div>
 <main>
-<section id="catalogTab" class="panel active">
+<section id="scannerTab" class="panel active">
+<div class="section-head">
+<div>
+<span class="eyebrow">BARCODE INVENTORY</span>
+<h2>Scanner</h2>
+</div>
+<span id="barcodeMapCount" class="badge">0</span>
+</div>
+<p class="new-intro">Scan a bottle. The first time a barcode is seen, choose the cologne it belongs to. After that, EKY Cologne remembers it.</p>
+<div class="scanner-card">
+<div id="barcodeReader" class="barcode-reader"></div>
+<div id="scannerStatus" class="update-status">Ready to scan.</div>
+<button id="startScannerBtn" class="primary scanner-start" type="button">▣ Start Barcode Scanner</button>
+<button id="stopScannerBtn" class="secondary hidden" type="button">Stop Scanner</button>
+<div class="manual-barcode">
+<label for="manualBarcodeInput">Or enter barcode</label>
+<div class="manual-barcode-row">
+<input id="manualBarcodeInput" inputmode="numeric" autocomplete="off" placeholder="Type barcode number…">
+<button id="manualBarcodeBtn" class="secondary" type="button">Use Barcode</button>
+</div>
+</div>
+</div>
+<div class="info">
+<div class="inventory-head">
+<div>
+<h3>Remembered barcodes</h3>
+<p class="helper-text">Each barcode stays linked to its cologne on this device.</p>
+</div>
+<span id="barcodeKnownCount" class="badge">0</span>
+</div>
+<div id="barcodeMapList" class="barcode-map-list"></div>
+<div id="barcodeMapEmpty" class="empty compact-empty">No barcodes assigned yet.</div>
+</div>
+<div class="info">
+<h3>Recent scans</h3>
+<div id="barcodeHistory" class="sales-history"></div>
+</div>
+</section>
+<section id="catalogTab" class="panel">
 <div class="hero">
 <div>
 <span id="catalogMasterCount" class="eyebrow">1,027-FRAGRANCE CATALOG</span>
 <h2>Find what it’s inspired by.</h2>
 <p>Search by MYS name, original fragrance, or fragrance notes.</p>
 </div>
-<span class="version">v191.3</span>
+<span class="version">v192.0</span>
 </div>
 <div class="search">
 <span>⌕</span>
@@ -255,7 +293,11 @@
 </section>
 </main>
 <nav class="bottom">
-<button class="nav active" data-tab="catalogTab">
+<button class="nav active" data-tab="scannerTab">
+<b>▣</b>
+<small>Scanner</small>
+</button>
+<button class="nav" data-tab="catalogTab">
 <b>⌕</b>
 <small>Catalog</small>
 </button>
@@ -352,11 +394,30 @@
 </form>
 </div>
 </div>
+<div id="barcodeActionSheet" class="backdrop hidden">
+<div class="sheet compact">
+<div class="handle"></div>
+<button id="closeBarcodeAction" class="close" type="button" aria-label="Close barcode action">×</button>
+<span class="eyebrow">BARCODE SCANNED</span>
+<h2 id="barcodeActionCode">Barcode</h2>
+<p id="barcodeActionHint" class="helper-text">Choose the cologne for this barcode, then mark it in or out of stock.</p>
+<label class="barcode-cologne-label">Cologne
+<input id="barcodeCologneInput" type="search" list="barcodeCologneOptions" autocomplete="off" placeholder="Search catalog name…" required>
+<datalist id="barcodeCologneOptions"></datalist>
+</label>
+<div class="barcode-stock-actions">
+<button id="barcodeInBtn" class="primary" type="button">IN STOCK +1</button>
+<button id="barcodeOutBtn" class="secondary" type="button">OUT OF STOCK −1</button>
+</div>
+<button id="forgetBarcodeBtn" class="text-btn hidden" type="button">Forget this barcode</button>
+</div>
+</div>
 <div id="toast" class="toast hidden">
 </div>
 <script src="catalog.js">
 </script>
-<script src="app.js?v=191.3">
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="app.js?v=192.0">
 </script>
 </body>
 </html>
