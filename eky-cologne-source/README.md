@@ -1,5 +1,14 @@
 # EKY Cologne
 
+## v191.4 barcode inventory
+
+- Adds a camera barcode scanner to the Orders tab.
+- Scanner asks **In Stock** or **Out of Stock** before scanning.
+- Every never-before-seen barcode must be assigned to a fragrance from the searchable catalog list.
+- Saved barcode assignments are remembered on the device for future scans.
+- In Stock scans add inventory; Out of Stock scans deduct inventory and record the sale.
+- Includes manual barcode-number entry when camera access is unavailable.
+
 EKY Cologne is an installable phone-friendly PWA built from the MYS Wholesale master catalog v183.
 
 ## Included
