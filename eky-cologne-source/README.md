@@ -1,5 +1,11 @@
 # EKY Cologne
 
+## v191.5 barcode home tab
+
+- Moves the barcode scanner into its own Barcode tab.
+- Makes Barcode the default home screen whenever the app opens.
+- Keeps inventory, sales tracking, and ordering tools in Orders.
+
 ## v191.4 barcode inventory
 
 - Adds a camera barcode scanner to the Orders tab.
