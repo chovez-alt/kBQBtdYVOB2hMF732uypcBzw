@@ -1,5 +1,5 @@
-const CACHE='eky-cologne-v223-paste-cache-fix';
-const APP_SHELL=['./','index.html','styles.css?v=192.1','app.js?v=192.1','catalog.js','manifest.webmanifest','icon.svg'];
+const CACHE='eky-cologne-v227-rename';
+const APP_SHELL=['./','index.html','styles.css?v=192.2','app.js?v=192.2','catalog.js','manifest.webmanifest','icon.svg'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(APP_SHELL)).then(()=>self.skipWaiting()));
