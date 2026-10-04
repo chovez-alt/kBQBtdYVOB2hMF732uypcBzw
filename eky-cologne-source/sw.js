@@ -1,6 +1,6 @@
-const CACHE='eky-cologne-v224-barcode-scanner';
+const CACHE='eky-cologne-v225-barcode-home';
 const ZXING_URL='https://cdn.jsdelivr.net/npm/@zxing/browser@0.2.1/umd/zxing-browser.min.js';
-const APP_SHELL=['./','index.html','styles.css?v=191.4','app.js?v=191.4','catalog.js','manifest.webmanifest','icon.svg',ZXING_URL];
+const APP_SHELL=['./','index.html','styles.css?v=191.5','app.js?v=191.5','catalog.js','manifest.webmanifest','icon.svg',ZXING_URL];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(APP_SHELL)).then(()=>self.skipWaiting()));
