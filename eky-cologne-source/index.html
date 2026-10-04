@@ -10,7 +10,7 @@
 <title>EKY Cologne</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon.svg">
-<link rel="stylesheet" href="styles.css?v=191.3">
+<link rel="stylesheet" href="styles.css?v=191.4">
 </head>
 <body>
 <div class="app-shell">
@@ -34,7 +34,7 @@
 <h2>Find what it’s inspired by.</h2>
 <p>Search by MYS name, original fragrance, or fragrance notes.</p>
 </div>
-<span class="version">v191.3</span>
+<span class="version">v191.4</span>
 </div>
 <div class="search">
 <span>⌕</span>
@@ -129,6 +129,15 @@
 <button id="notifyBtn" class="text-btn">Enable alerts</button>
 </div>
 <div id="lowStockBanner" class="stock-alert hidden">
+</div>
+<div class="info barcode-box">
+<div class="inventory-head">
+<div>
+<h3>Barcode inventory</h3>
+<p class="helper-text">Scan a bottle, then choose whether it is coming in or going out. Every new barcode will ask you to assign its fragrance once.</p>
+</div>
+</div>
+<button id="openBarcodeScanner" class="primary barcode-open" type="button">▣ Scan Barcode</button>
 </div>
 <div class="info">
 <div class="inventory-head">
@@ -336,6 +345,53 @@
 </form>
 </div>
 </div>
+<div id="barcodeSheet" class="backdrop hidden">
+<div class="sheet barcode-sheet">
+<div class="handle">
+</div>
+<button id="closeBarcodeScanner" class="close" type="button" aria-label="Close barcode scanner">×</button>
+<span class="eyebrow">BARCODE INVENTORY</span>
+<div id="barcodeActionStep">
+<h2>Is this coming in or going out?</h2>
+<p class="helper-text">Choose what the scan should do to your inventory.</p>
+<div class="barcode-actions">
+<button class="barcode-direction barcode-in" type="button" data-barcode-direction="in"><b>＋ In Stock</b><span>Add bottles to inventory</span></button>
+<button class="barcode-direction barcode-out" type="button" data-barcode-direction="out"><b>− Out of Stock</b><span>Record a sale and deduct</span></button>
+</div>
+</div>
+<div id="barcodeCameraStep" class="hidden">
+<h2 id="barcodeModeTitle">Scan barcode</h2>
+<p id="barcodeCameraStatus" class="helper-text" aria-live="polite">Point the camera at the bottle barcode.</p>
+<div class="barcode-camera">
+<video id="barcodeVideo" playsinline muted></video>
+<div class="barcode-guide" aria-hidden="true"></div>
+</div>
+<form id="manualBarcodeForm" class="manual-barcode-form">
+<label for="manualBarcodeInput">Or type the barcode number</label>
+<div>
+<input id="manualBarcodeInput" type="text" inputmode="numeric" autocomplete="off" placeholder="Barcode number">
+<button class="secondary" type="submit">Use Number</button>
+</div>
+</form>
+<button id="backBarcodeAction" class="secondary barcode-back" type="button">Back</button>
+</div>
+<div id="barcodeResultStep" class="hidden">
+<h2 id="barcodeResultTitle">Assign barcode</h2>
+<div class="barcode-number">Barcode: <b id="scannedBarcode"></b></div>
+<p id="barcodeAssignmentStatus" class="helper-text" aria-live="polite"></p>
+<form id="barcodeAssignmentForm" class="edit-inventory-form">
+<label>Fragrance
+<input id="barcodeProductName" type="search" list="barcodeProductList" autocomplete="off" required placeholder="Type name or number…">
+<datalist id="barcodeProductList"></datalist>
+</label>
+<label>Quantity<input id="barcodeQuantity" type="number" min="1" value="1" required></label>
+<label id="barcodeToteLabel">Tote location (optional)<input id="barcodeTote" type="text" maxlength="20" placeholder="Tote A, B, 1…"></label>
+<button id="saveBarcodeAction" class="primary" type="submit">Assign & Add Stock</button>
+<button id="rescanBarcode" class="secondary" type="button">Scan Again</button>
+</form>
+</div>
+</div>
+</div>
 <div id="manualAddSheet" class="backdrop hidden">
 <div class="sheet compact">
 <div class="handle">
@@ -356,7 +412,9 @@
 </div>
 <script src="catalog.js">
 </script>
-<script src="app.js?v=191.3">
+<script src="https://cdn.jsdelivr.net/npm/@zxing/browser@0.2.1/umd/zxing-browser.min.js" crossorigin="anonymous">
+</script>
+<script src="app.js?v=191.4">
 </script>
 </body>
 </html>
