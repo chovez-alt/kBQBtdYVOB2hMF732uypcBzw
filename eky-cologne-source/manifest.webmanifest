@@ -1,6 +1,6 @@
 {
-  "name": "EKY Cologne 2",
-  "short_name": "EKY Cologne 2",
+  "name": "EKY Cologne",
+  "short_name": "EKY Cologne",
   "description": "MYS perfume and cologne inspiration finder",
   "start_url": "./",
   "display": "standalone",
@@ -15,3 +15,4 @@
     }
   ]
 }
+

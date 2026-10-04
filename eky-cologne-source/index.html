@@ -6,11 +6,11 @@
 <meta name="theme-color" content="#1557d6">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="EKY Cologne 2">
-<title>EKY Cologne 2</title>
+<meta name="apple-mobile-web-app-title" content="EKY Cologne">
+<title>EKY Cologne</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon.svg">
-<link rel="stylesheet" href="styles.css?v=192.2">
+<link rel="stylesheet" href="styles.css?v=191-scanner-1">
 </head>
 <body>
 <div class="app-shell">
@@ -18,7 +18,7 @@
 <div class="brand">
 <div class="logo">EKY</div>
 <div>
-<h1>EKY Cologne 2</h1>
+<h1>EKY Cologne</h1>
 <p>MYS perfume & cologne finder</p>
 </div>
 </div>
@@ -28,42 +28,11 @@
 <div id="offlineBanner" class="offline-banner hidden" role="status">Offline mode — catalog, inventory, tote locations, and sales are available.</div>
 <main>
 <section id="scannerTab" class="panel active">
-<div class="section-head">
-<div>
-<span class="eyebrow">BARCODE INVENTORY</span>
-<h2>Scanner</h2>
-</div>
-<span id="barcodeMapCount" class="badge">0</span>
-</div>
-<p class="new-intro">Scan a bottle. The first time a barcode is seen, choose the cologne it belongs to. After that, EKY Cologne 2 remembers it.</p>
-<div class="scanner-card">
-<div id="barcodeReader" class="barcode-reader"></div>
-<div id="scannerStatus" class="update-status">Ready to scan.</div>
-<button id="startScannerBtn" class="primary scanner-start" type="button">▣ Start Barcode Scanner</button>
-<button id="stopScannerBtn" class="secondary hidden" type="button">Stop Scanner</button>
-<div class="manual-barcode">
-<label for="manualBarcodeInput">Or enter barcode</label>
-<div class="manual-barcode-row">
-<input id="manualBarcodeInput" inputmode="numeric" autocomplete="off" placeholder="Type barcode number…">
-<button id="manualBarcodeBtn" class="secondary" type="button">Use Barcode</button>
-</div>
-</div>
-</div>
-<div class="info">
-<div class="inventory-head">
-<div>
-<h3>Remembered barcodes</h3>
-<p class="helper-text">Each barcode stays linked to its cologne on this device.</p>
-</div>
-<span id="barcodeKnownCount" class="badge">0</span>
-</div>
-<div id="barcodeMapList" class="barcode-map-list"></div>
-<div id="barcodeMapEmpty" class="empty compact-empty">No barcodes assigned yet.</div>
-</div>
-<div class="info">
-<h3>Recent scans</h3>
-<div id="barcodeHistory" class="sales-history"></div>
-</div>
+<div class="section-head"><div><span class="eyebrow">V191 · BARCODE INVENTORY</span><h2>Scanner</h2></div><span id="barcodeCount" class="badge">0</span></div>
+<div class="info"><p>Scan a bottle, choose its cologne the first time, then add or remove stock.</p><div id="scannerCamera"></div><p id="scannerMessage" role="status">Ready to scan.</p><button id="scanStart" class="primary" type="button">Start Barcode Scanner</button><button id="scanStop" class="secondary hidden" type="button">Stop Camera</button>
+<form id="manualBarcodeForm" class="scanner-manual"><label for="manualBarcode">Or enter barcode</label><input id="manualBarcode" inputmode="numeric" autocomplete="off" placeholder="Barcode number" required><button class="secondary" type="submit">Use Barcode</button></form></div>
+<div class="info"><h3>Remembered barcodes</h3><p class="helper-text">Assignments and stock history stay saved on this device.</p><div id="barcodeMappings"></div></div>
+<div class="info"><h3>Stock scan history</h3><div id="barcodeHistory"></div></div>
 </section>
 <section id="catalogTab" class="panel">
 <div class="hero">
@@ -72,7 +41,7 @@
 <h2>Find what it’s inspired by.</h2>
 <p>Search by MYS name, original fragrance, or fragrance notes.</p>
 </div>
-<span class="version">v192.2</span>
+<span class="version">v191</span>
 </div>
 <div class="search">
 <span>⌕</span>
@@ -126,8 +95,6 @@
 </div>
 <p class="new-intro">Tap Update Catalog to find new MYS fragrances, match them, and add verified ones. Only uncertain matches stay here.</p>
 <button id="autoCatalogBtn" class="update-list-btn auto-catalog-btn" type="button">↻ Update Catalog</button>
-<button id="matchUpdatedCatalogBtn" class="match-updated-catalog-btn" type="button">✓ Match Updated Catalog</button>
-<div id="matchUpdatedCatalogStatus" class="update-status hidden" aria-live="polite"></div>
 <button id="copyUnverifiedBtn" class="copy-unverified-btn" type="button">Copy Unverified</button>
 <div class="paste-matches-box">
 <label for="pasteMatchesInput">Paste matched results</label>
@@ -277,7 +244,7 @@
 <div class="section-head">
 <div>
 <span class="eyebrow">ABOUT</span>
-<h2>EKY Cologne 2</h2>
+<h2>EKY Cologne</h2>
 </div>
 </div>
 <div class="info">
@@ -289,14 +256,10 @@
 <h3>Offline use</h3>
 <p>After the first successful load, the catalog is cached so you can search it without a connection.</p>
 </div>
-<button id="shareBtn" class="primary">Share EKY Cologne 2</button>
+<button id="shareBtn" class="primary">Share EKY Cologne</button>
 </section>
 </main>
-<nav class="bottom">
-<button class="nav active" data-tab="scannerTab">
-<b>▣</b>
-<small>Scanner</small>
-</button>
+<nav class="bottom"><button class="nav active" data-tab="scannerTab"><b>▣</b><small>Scanner</small></button>
 <button class="nav" data-tab="catalogTab">
 <b>⌕</b>
 <small>Catalog</small>
@@ -338,9 +301,9 @@
 </div>
 <button id="closeInstall" class="close">×</button>
 <span class="eyebrow">IPHONE</span>
-<h2>Add EKY Cologne 2 to Home Screen</h2>
+<h2>Add EKY Cologne to Home Screen</h2>
 <ol>
-<li>Open EKY Cologne 2 in Safari.</li>
+<li>Open EKY Cologne in Safari.</li>
 <li>Tap <b>Share</b>.</li>
 <li>Choose <b>Add to Home Screen</b>.</li>
 <li>Tap <b>Add</b>.</li>
@@ -382,42 +345,26 @@
 <div class="sheet compact">
 <div class="handle">
 </div>
-<button id="closeManualAdd" class="close" type="button" aria-label="Close pasted fragrance information">×</button>
-<span class="eyebrow">PASTE VERIFICATION</span>
-<h2 id="manualAddName">Paste fragrance information</h2>
+<button id="closeManualAdd" class="close" type="button" aria-label="Close manual fragrance form">×</button>
+<span class="eyebrow">MANUAL VERIFICATION</span>
+<h2 id="manualAddName">Add fragrance manually</h2>
 <form id="manualAddForm" class="edit-inventory-form">
-<p class="helper-text">Paste the ChatGPT result. Inspiration, notes, gender, confidence, reason, and source link will be saved in the correct places.</p>
-<label>Paste fragrance details<textarea id="manualPasteInput" rows="10" placeholder="Inspired by: Brand and fragrance&#10;Confidence: High or Medium&#10;Reason: Why it matches&#10;Notes to save: Fragrance notes&#10;Gender: Men, Women, or Unisex"></textarea></label>
-<div id="manualPasteStatus" class="paste-matches-status hidden" aria-live="polite"></div>
-<button class="primary" type="submit">Paste & Add to Catalog</button>
+<label>Inspired by<input id="manualInspiredBy" type="text" maxlength="160" placeholder="Original fragrance name" required></label>
+<label>Fragrance notes<textarea id="manualNotes" rows="4" placeholder="Enter fragrance notes" required></textarea></label>
+<label>Gender<select id="manualGender"><option value="Men">Men</option><option value="Women">Women</option><option value="Unisex">Unisex</option></select></label>
+<button class="primary" type="submit">Verify & Add to Catalog</button>
 <button id="cancelManualAdd" class="secondary" type="button">Cancel</button>
 </form>
 </div>
 </div>
-<div id="barcodeActionSheet" class="backdrop hidden">
-<div class="sheet compact">
-<div class="handle"></div>
-<button id="closeBarcodeAction" class="close" type="button" aria-label="Close barcode action">×</button>
-<span class="eyebrow">BARCODE SCANNED</span>
-<h2 id="barcodeActionCode">Barcode</h2>
-<p id="barcodeActionHint" class="helper-text">Choose the cologne for this barcode, then mark it in or out of stock.</p>
-<label class="barcode-cologne-label">Cologne
-<input id="barcodeCologneInput" type="search" list="barcodeCologneOptions" autocomplete="off" placeholder="Search catalog name…" required>
-<datalist id="barcodeCologneOptions"></datalist>
-</label>
-<div class="barcode-stock-actions">
-<button id="barcodeInBtn" class="primary" type="button">IN STOCK +1</button>
-<button id="barcodeOutBtn" class="secondary" type="button">OUT OF STOCK −1</button>
-</div>
-<button id="forgetBarcodeBtn" class="text-btn hidden" type="button">Forget this barcode</button>
-</div>
-</div>
+<div id="barcodeAction" class="backdrop hidden"><div class="sheet compact"><button id="barcodeClose" class="close" type="button" aria-label="Close barcode">×</button><span class="eyebrow">BARCODE SCANNED</span><h2 id="barcodeCode"></h2><p id="barcodeHint" role="status"></p><label for="barcodeCologne">Choose cologne</label><input id="barcodeCologne" type="search" autocomplete="off" placeholder="Search cologne name"><div id="barcodeChoices" class="hidden"></div><div class="scanner-actions"><button id="barcodeIn" class="primary" type="button">IN STOCK +1</button><button id="barcodeOut" class="secondary" type="button">OUT OF STOCK −1</button></div><button id="barcodeSaveAssignment" class="secondary" type="button">Save assignment only</button><button id="barcodeForget" class="text-btn hidden" type="button">Forget barcode</button></div></div>
 <div id="toast" class="toast hidden">
 </div>
 <script src="catalog.js">
 </script>
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-<script src="app.js?v=192.2">
+<script src="app.js?v=191-scanner-1">
 </script>
+<script src="scanner.js?v=191-scanner-1"></script>
 </body>
 </html>
+

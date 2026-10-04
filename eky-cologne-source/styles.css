@@ -16,19 +16,5 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}.app-shell,.panel,.topbar,
 @media(max-width:520px){.topbar{padding-left:12px;padding-right:12px}.logo{width:42px;height:42px;border-radius:12px}.brand{gap:8px}.brand h1{font-size:18px}.icon-btn{padding:0 9px}.panel{padding:12px 10px 24px}.hero{padding:16px;border-radius:18px;gap:8px}.hero h2{font-size:23px}.hero p{font-size:14px}.version{padding:6px 8px}.section-head h2{font-size:25px}.bottom{grid-template-columns:repeat(6,minmax(0,1fr));padding-left:2px;padding-right:2px}.nav{min-width:0;padding:2px 0}.nav b{font-size:18px}.nav small{font-size:9px;max-width:100%;overflow-wrap:anywhere}.sheet,.sheet.compact{width:100%;max-height:82vh;padding-left:14px;padding-right:14px}.new-actions{align-items:stretch}.chatgpt-search-btn,.manual-add-btn,.add-list-btn{flex:1 1 130px}.new-source{flex:1 0 100%}.auto-catalog-btn{max-width:100%}.info{padding:14px}.sales-summary{gap:5px}.sales-metric{padding:9px 3px}.sales-metric strong{font-size:18px}.sales-metric span{font-size:9px}.stock-form{grid-template-columns:minmax(0,1fr) 72px}}
 @media(max-width:360px){.icon-btn span{display:none}.search-scope{grid-template-columns:1fr}.scope-btn{padding:8px}.new-bulk-actions{grid-template-columns:1fr}.stock-form{grid-template-columns:1fr}.stock-form>*{grid-column:1/-1}.sales-summary{grid-template-columns:1fr}.bottom .nav small{font-size:8px}}
 
-/* v192 barcode scanner */
-.barcode-reader{width:100%;min-height:220px;border:2px dashed #b8c6df;border-radius:16px;overflow:hidden;background:#eef3fb;margin:12px 0}
-.barcode-reader video{width:100%!important;border-radius:14px}
-.scanner-card{background:#fff;border-radius:18px;padding:16px;box-shadow:0 8px 24px rgba(20,50,90,.08);margin-bottom:16px}
-.scanner-start{width:100%;margin-top:8px}
-.manual-barcode{margin-top:14px}
-.manual-barcode label,.barcode-cologne-label{display:block;font-weight:700;margin-bottom:8px}
-.manual-barcode-row{display:flex;gap:8px}
-.manual-barcode-row input,.barcode-cologne-label input{width:100%;min-width:0;padding:12px 14px;border:1px solid #cbd6e8;border-radius:12px;font-size:16px;background:#fff}
-.barcode-stock-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
-.barcode-map-list{display:grid;gap:10px}
-.barcode-map-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #e5ebf5}
-.barcode-map-row small{display:block;color:#6e7d96;margin-top:3px;letter-spacing:.04em}
-.bottom{overflow-x:auto;justify-content:flex-start}
-.bottom .nav{min-width:72px;flex:1 0 72px}
-@media (max-width:430px){.bottom .nav{min-width:64px}.bottom .nav small{font-size:10px}.barcode-stock-actions{grid-template-columns:1fr}}
+
+.bottom{grid-template-columns:repeat(7,minmax(0,1fr))}.scanner-manual{display:grid;gap:10px;margin-top:20px}.scanner-manual input,#barcodeCologne{width:100%;padding:12px;font-size:16px;border:1px solid #ccd7ea;border-radius:10px}.scanner-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}#barcodeChoices{max-height:210px;overflow:auto;border:1px solid #ccd7ea;border-radius:10px}.scanner-choice,.scanner-mapping{display:block;width:100%;text-align:left;padding:12px;background:#fff;border:0;border-bottom:1px solid #dde5f2;font-size:15px;color:#14213d}.scanner-mapping small{display:block;margin-top:4px;color:#6a7892}#scannerCamera{overflow:hidden;border-radius:14px}#barcodeCode{overflow-wrap:anywhere}#barcodeAction .secondary{margin-bottom:8px}@media(max-width:520px){.bottom{grid-template-columns:repeat(7,minmax(0,1fr))}.nav small{font-size:8px}}
