@@ -10,7 +10,7 @@
 <title>EKY Cologne</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon.svg">
-<link rel="stylesheet" href="styles.css?v=191.4">
+<link rel="stylesheet" href="styles.css?v=191.5">
 </head>
 <body>
 <div class="app-shell">
@@ -27,14 +27,37 @@
 </header>
 <div id="offlineBanner" class="offline-banner hidden" role="status">Offline mode — catalog, inventory, tote locations, and sales are available.</div>
 <main>
-<section id="catalogTab" class="panel active">
+<section id="barcodeTab" class="panel active">
+<div class="section-head barcode-home-head">
+<div>
+<span class="eyebrow">HOME</span>
+<h2>Barcode Scanner</h2>
+</div>
+<span class="version">v191.5</span>
+</div>
+<div class="barcode-home-hero">
+<div class="barcode-home-icon">▣</div>
+<h3>Scan inventory in or out</h3>
+<p>Scan a bottle, then choose whether it is coming in or going out. Every new barcode will ask you to assign its fragrance once.</p>
+<button id="openBarcodeScanner" class="primary barcode-open" type="button">▣ Scan Barcode</button>
+</div>
+<div class="info barcode-home-help">
+<h3>How it works</h3>
+<div class="barcode-home-steps">
+<div><b>1</b><span>Choose In Stock or Out of Stock</span></div>
+<div><b>2</b><span>Point the camera at the bottle barcode</span></div>
+<div><b>3</b><span>Assign new barcodes once; saved ones are recognized automatically</span></div>
+</div>
+</div>
+</section>
+<section id="catalogTab" class="panel">
 <div class="hero">
 <div>
 <span id="catalogMasterCount" class="eyebrow">1,027-FRAGRANCE CATALOG</span>
 <h2>Find what it’s inspired by.</h2>
 <p>Search by MYS name, original fragrance, or fragrance notes.</p>
 </div>
-<span class="version">v191.4</span>
+<span class="version">v191.5</span>
 </div>
 <div class="search">
 <span>⌕</span>
@@ -129,15 +152,6 @@
 <button id="notifyBtn" class="text-btn">Enable alerts</button>
 </div>
 <div id="lowStockBanner" class="stock-alert hidden">
-</div>
-<div class="info barcode-box">
-<div class="inventory-head">
-<div>
-<h3>Barcode inventory</h3>
-<p class="helper-text">Scan a bottle, then choose whether it is coming in or going out. Every new barcode will ask you to assign its fragrance once.</p>
-</div>
-</div>
-<button id="openBarcodeScanner" class="primary barcode-open" type="button">▣ Scan Barcode</button>
 </div>
 <div class="info">
 <div class="inventory-head">
@@ -264,7 +278,11 @@
 </section>
 </main>
 <nav class="bottom">
-<button class="nav active" data-tab="catalogTab">
+<button class="nav active" data-tab="barcodeTab">
+<b>▣</b>
+<small>Barcode</small>
+</button>
+<button class="nav" data-tab="catalogTab">
 <b>⌕</b>
 <small>Catalog</small>
 </button>
@@ -414,7 +432,7 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@zxing/browser@0.2.1/umd/zxing-browser.min.js" crossorigin="anonymous">
 </script>
-<script src="app.js?v=191.4">
+<script src="app.js?v=191.5">
 </script>
 </body>
 </html>
