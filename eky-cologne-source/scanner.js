@@ -20,6 +20,8 @@
     if(running && !paused){try{scanner.pause();paused=true;}catch{}}
     code = String(raw || '').trim();
     if(!code || code.length>128){message('Enter a valid barcode.');return;}
+    if(/^0\d{12}$/.test(code)&&map[code.slice(1)])code=code.slice(1);
+    else if(/^\d{12}$/.test(code)&&map['0'+code])code='0'+code;
     selected = map[code]?.name || '';
     $('barcodeCode').textContent = code;
     $('barcodeCologne').value = selected;
@@ -47,7 +49,10 @@
     if(busy || !code)return;
     const name=chosen();if(!name){$('barcodeHint').textContent='Pick a cologne from the list first.';renderChoices();return;}
     const existing=inventory.find(item=>normalizeName(item.name)===normalizeName(name));
-    if(action==='out'&&(!existing||Number(existing.qty)<1)){$('barcodeHint').textContent=name+' has no stock to remove.';return;}
+    if(action==='out'&&(!existing||Number(existing.qty)<1)){
+      try{map[code]={name,updatedAt:Date.now()};save();renderSaved();$('barcodeForget').classList.remove('hidden');$('barcodeHint').textContent='Barcode remembered as '+name+'. There is no stock to remove yet. Choose IN to add a bottle, or close this page.';}catch{$('barcodeHint').textContent='Could not save the barcode assignment. Please try again.';}
+      return;
+    }
     busy=true;
     const oldInventory=JSON.stringify(inventory),oldMap=JSON.stringify(map),oldHistory=JSON.stringify(history);
     try {
@@ -88,7 +93,7 @@
         lastCode=value;lastScanAt=now;open(value);message('Barcode found. Choose IN STOCK or OUT OF STOCK.');
       },()=>{});
       if(ticket!==generation||!wantsCamera||!active()||document.hidden){try{await reader.stop();reader.clear();}catch{}return;}
-      running=true;$('scanStart').textContent='Camera scanning';$('scanStop').classList.remove('hidden');
+      running=true;try{localStorage.setItem('eky-cologne-camera-allowed-v1','true');}catch{}$('scanStart').textContent='Camera scanning';$('scanStop').classList.remove('hidden');
       message('Scanning automatically — point the camera at a barcode.');
     } catch(error) {
       if(ticket===generation){
