@@ -11,9 +11,15 @@
     $('barcodeMappings').innerHTML = Object.entries(map).map(([barcode, entry]) => '<button type="button" class="scanner-mapping" data-code="'+esc(barcode)+'"><b>'+esc(entry.name)+'</b><small>'+esc(barcode)+' · Edit assignment</small></button>').join('') || '<p>No barcodes assigned yet.</p>';
     $('barcodeHistory').innerHTML = history.slice(0,50).map(row => '<div class="sale-row"><div><b>'+esc(row.name)+'</b><br><small>'+esc(row.code)+' · '+new Date(row.time).toLocaleString()+'</small></div><strong>'+(row.action==='in'?'+1 IN':'−1 OUT')+'</strong></div>').join('') || '<p>No stock scans recorded yet.</p>';
   }
+  function renderCopyOptions(){
+    const select=$('barcodeCopyFrom'),old=select.value,term=$('barcodeCopySearch').value.trim().toLowerCase();
+    select.innerHTML='<option value="">No copy — add to What’s New for research</option>'+data.filter(item=>!term||[displayName(item),item.inspiredBy||''].join(' ').toLowerCase().includes(term)).sort((a,b)=>displayName(a).localeCompare(displayName(b))).map(item=>'<option value="'+esc(String(item.no))+'">'+esc(displayName(item))+'</option>').join('');
+    if([...select.options].some(option=>option.value===old))select.value=old;
+  }
   function renderChoices() {
     const term = $('barcodeCologne').value.trim().toLowerCase();
-    $('barcodeCreate').classList.toggle('hidden',!term||names().some(name=>name.toLowerCase()===term));
+    const canCreate=!!term&&!names().some(name=>name.toLowerCase()===term);
+    $('barcodeCreate').classList.toggle('hidden',!canCreate);$('barcodeCopyOptions').classList.toggle('hidden',!canCreate);renderCopyOptions();
     $('barcodeChoices').innerHTML = names().filter(name => !term || name.toLowerCase().includes(term)).slice(0,60).map(name => '<button type="button" class="scanner-choice" data-name="'+esc(name)+'">'+esc(name)+'</button>').join('') || '<p>No cologne matches.</p>';
     $('barcodeChoices').classList.remove('hidden');
   }
@@ -23,7 +29,7 @@
     if(/^0\d{12}$/.test(code)&&map[code.slice(1)])code=code.slice(1);
     else if(/^\d{12}$/.test(code)&&map['0'+code])code='0'+code;
     selected = map[code]?.name || '';
-    $('barcodeCreate').classList.add('hidden');
+    $('barcodeCreate').classList.add('hidden');$('barcodeCopyOptions').classList.add('hidden');$('barcodeCopySearch').value='';$('barcodeCopyFrom').value='';
     $('barcodeCode').textContent = code;
     $('barcodeCologne').value = selected;
     $('barcodeHint').textContent = selected ? 'Remembered as '+selected+'. Add or remove one bottle.' : 'First scan: pick the cologne this barcode belongs to.';
@@ -120,20 +126,22 @@
   $('barcodeCologne').oninput=()=>{selected='';renderChoices();};$('barcodeCologne').onfocus=renderChoices;
   $('barcodeChoices').onclick=e=>{const b=e.target.closest('[data-name]');if(b){selected=b.dataset.name;$('barcodeCologne').value=selected;$('barcodeChoices').classList.add('hidden');}};
   $('barcodeMappings').onclick=e=>{const b=e.target.closest('[data-code]');if(b)open(b.dataset.code);};
+  $('barcodeCopySearch').oninput=renderCopyOptions;
   $('barcodeCreate').onclick=()=>{
     const typed=$('barcodeCologne').value.trim();
     if(!typed||!code){$('barcodeHint').textContent='Enter the new cologne name first.';return;}
-    const oldStock=JSON.stringify(inventory),oldNames=JSON.stringify(customNames),oldPending=JSON.stringify(pendingUpdates),oldMap=JSON.stringify(map);
+    const oldStock=JSON.stringify(inventory),oldNames=JSON.stringify(customNames),oldPending=JSON.stringify(pendingUpdates),oldMap=JSON.stringify(map),oldApproved=JSON.stringify(approvedUpdates),oldData=data.slice();
     try{
-      const name=registerStockFragrance(typed);
+      const copyNo=$('barcodeCopyFrom').value;
+      const name=copyNo?registerCopiedStockFragrance(typed,copyNo):registerStockFragrance(typed);
       if(!inventory.some(item=>normalizeName(item.name)===normalizeName(name)))inventory.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2),name,qty:0,tote:''});
       map[code]={name,updatedAt:Date.now()};saveStock();save();
-      $('barcodeCologne').value=name;$('barcodeChoices').classList.add('hidden');$('barcodeCreate').classList.add('hidden');$('barcodeForget').classList.remove('hidden');
-      $('barcodeHint').textContent=name+' created and assigned. Added to What’s New for Search ChatGPT. Choose IN STOCK to add a bottle.';
+      $('barcodeCologne').value=name;$('barcodeChoices').classList.add('hidden');$('barcodeCreate').classList.add('hidden');$('barcodeCopyOptions').classList.add('hidden');$('barcodeForget').classList.remove('hidden');
+      $('barcodeHint').textContent=name+(copyNo?' created with the selected fragrance’s details. Added to What’s New — use Edit Details to change them. Choose IN STOCK to add a bottle.':' created and assigned. Added to What’s New for Search ChatGPT. Choose IN STOCK to add a bottle.');
       renderSaved();renderInventory();render();
     }catch(error){
-      inventory=JSON.parse(oldStock);customNames=JSON.parse(oldNames);pendingUpdates=JSON.parse(oldPending);map=JSON.parse(oldMap);
-      try{saveStock();localStorage.setItem(CUSTOM_KEY,oldNames);savePending();save();}catch{}
+      inventory=JSON.parse(oldStock);customNames=JSON.parse(oldNames);pendingUpdates=JSON.parse(oldPending);map=JSON.parse(oldMap);approvedUpdates=JSON.parse(oldApproved);data.splice(0,data.length,...oldData);
+      try{saveStock();localStorage.setItem(CUSTOM_KEY,oldNames);saveApproved();savePending();save();}catch{}
       renderWhatsNew();$('barcodeHint').textContent='Could not create this cologne. Please try again.';
     }
   };

@@ -94,7 +94,7 @@ function renderWhatsNew(){
   if(empty)empty.classList.toggle('hidden',items.length>0);
   const verifyAll=document.querySelector('#verifyAllBtn'),addAll=document.querySelector('#addAllBtn'),copyUnverified=document.querySelector('#copyUnverifiedBtn'),verifiedCount=pendingUpdates.filter(pendingVerified).length,unverifiedCount=pendingUpdates.filter(item=>!pendingVerified(item)).length;if(verifyAll)verifyAll.disabled=!pendingUpdates.length;if(addAll){addAll.disabled=!verifiedCount;addAll.textContent='＋ Add All'+(verifiedCount?' ('+verifiedCount+')':'')}if(copyUnverified){copyUnverified.disabled=!unverifiedCount;copyUnverified.textContent='Copy Unverified'+(unverifiedCount?' ('+unverifiedCount+')':'')}
   if(!list)return;
-  list.innerHTML=items.map(item=>{const date=pendingDate(item)?new Date(pendingDate(item)).toLocaleDateString():'',verified=pendingVerified(item),source=String(item.sourceId||canonicalName(item.name)),encoded=encodeURIComponent(source);return `<article class="new-card"><div class="new-card-head"><div><span class="detail-no"><span class="pending-dot ${verified?'verified-dot':''}"></span>${verified?'VERIFIED':'NEEDS VERIFICATION'}</span><h3>${esc(item.name)}</h3></div><span class="new-date">${esc(date)}</span></div><div class="meta"><span class="pill">${esc(item.gender||'Unisex')}</span><span class="pill ${verified?'verified':'unresolved'}">${verified?'Verified':'Needs verification'}</span></div><div class="new-match">${esc(item.inspiredBy||'Match not confirmed yet')}</div><div class="new-notes"><b>Fragrance notes</b><br>${esc(item.notes||'MYS has not posted fragrance notes for this item yet.')}</div><div class="new-actions"><a class="new-source" href="${esc(item.sourceUrl||'https://myswholesale.com/collections/1016_perfumes')}" target="_blank" rel="noopener">View on MYS</a>${verified?`<button class="add-list-btn" type="button" data-add-source="${esc(source)}">Add to List</button>`:`<button class="chatgpt-search-btn" type="button" data-chat-source="${encoded}">✦ Search ChatGPT</button><button class="manual-add-btn" type="button" data-manual-source="${encoded}">Add Manually</button>`}</div></article>`}).join('');
+  list.innerHTML=items.map(item=>{const date=pendingDate(item)?new Date(pendingDate(item)).toLocaleDateString():'',verified=pendingVerified(item),source=String(item.sourceId||canonicalName(item.name)),encoded=encodeURIComponent(source);return `<article class="new-card"><div class="new-card-head"><div><span class="detail-no"><span class="pending-dot ${verified?'verified-dot':''}"></span>${verified?'VERIFIED':'NEEDS VERIFICATION'}</span><h3>${esc(item.name)}</h3></div><span class="new-date">${esc(date)}</span></div><div class="meta"><span class="pill">${esc(item.gender||'Unisex')}</span><span class="pill ${verified?'verified':'unresolved'}">${verified?'Verified':'Needs verification'}</span></div><div class="new-match">${esc(item.inspiredBy||'Match not confirmed yet')}</div><div class="new-notes"><b>Fragrance notes</b><br>${esc(item.notes||'MYS has not posted fragrance notes for this item yet.')}</div><div class="new-actions"><a class="new-source" href="${esc(item.sourceUrl||'https://myswholesale.com/collections/1016_perfumes')}" target="_blank" rel="noopener">View on MYS</a>${verified?`<button class="add-list-btn" type="button" data-add-source="${esc(source)}">Add to List</button>`:`<button class="chatgpt-search-btn" type="button" data-chat-source="${encoded}">✦ Search ChatGPT</button><button class="manual-add-btn" type="button" data-manual-source="${encoded}">Edit Details</button>`}</div></article>`}).join('');
 }
 async function copyUnverified(){
   const items=pendingUpdates.filter(item=>!pendingVerified(item));if(!items.length){toast('No unverified fragrances to copy');return}
@@ -225,4 +225,17 @@ function registerStockFragrance(rawName){
     renderWhatsNew();
   }
   return savedName;
+}
+
+function registerCopiedStockFragrance(rawName,templateNo){
+  const name=String(rawName||'').trim(),key=normalizeName(name);
+  const template=data.find(item=>String(item.no)===String(templateNo));
+  if(!name||!template)throw new Error('Enter a new name and select a cologne to copy.');
+  if(data.some(item=>normalizeName(displayName(item))===key))throw new Error('That name is already in the catalog. Use a different new name.');
+  const entry={...template,name,no:Math.max(0,...data.map(item=>Number(item.no)||0))+1,sourceId:'copied-stock-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2),addedAt:Date.now(),publishedAt:new Date().toISOString(),imported:true,copiedFromNo:template.no,copiedFromName:displayName(template)};
+  entry.status='Needs verification';entry.imported=false;entry.checkedAt=Date.now();
+  pendingUpdates=pendingUpdates.filter(item=>normalizeName(item.name)!==key);pendingUpdates.push(entry);
+  if(!customNames.some(item=>normalizeName(item)===key))customNames.push(name);
+  savePending();renderWhatsNew();localStorage.setItem(CUSTOM_KEY,JSON.stringify(customNames));
+  return name;
 }
