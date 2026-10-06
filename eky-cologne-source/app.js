@@ -182,7 +182,7 @@ document.querySelector('#updateListBtn').onclick=async()=>{
   }catch(error){status.className='update-status error';status.textContent='Could not check MYS right now. Your saved list was not changed.';toast('MYS list check could not finish')}
   finally{button.disabled=false;button.textContent='↻ Update List'}
 };
-document.querySelector('#inventoryForm').onsubmit=e=>{e.preventDefault();const name=document.querySelector('#inventoryName').value.trim(),qty=Math.max(1,+document.querySelector('#inventoryQty').value||1),tote=cleanTote(document.querySelector('#inventoryTote').value);let item=inventory.find(x=>x.name.toLowerCase()===name.toLowerCase());const previous=item?.qty??null;if(item){item.qty+=qty;if(tote)item.tote=tote}else{item={id:Date.now().toString(36)+Math.random().toString(36).slice(2),name,qty,tote};inventory.push(item)}saveStock();lowAlert(item,previous);e.target.reset();document.querySelector('#inventoryQty').value=1;renderInventory();render()};
+document.querySelector('#inventoryForm').onsubmit=e=>{e.preventDefault();const name=document.querySelector('#inventoryName').value.trim(),qty=Math.max(1,+document.querySelector('#inventoryQty').value||1),tote=cleanTote(document.querySelector('#inventoryTote').value);let item=inventory.find(x=>x.name.toLowerCase()===name.toLowerCase());const previous=item?.qty??null;if(item){item.qty+=qty;if(tote)item.tote=tote}else{item={id:Date.now().toString(36)+Math.random().toString(36).slice(2),name,qty,tote};inventory.push(item)}registerStockFragrance(item.name);saveStock();lowAlert(item,previous);e.target.reset();document.querySelector('#inventoryQty').value=1;renderInventory();render()};
 document.querySelector('#inventoryList').onclick=e=>{const b=e.target.closest('[data-stock]');if(!b)return;const item=inventory.find(x=>x.id===b.dataset.id);if(!item)return;if(b.dataset.stock==='sell'){openQuickSale(item);return}if(b.dataset.stock==='edit'){openInventoryEditor(item);return}const previous=item.qty;if(b.dataset.stock==='plus')item.qty++;if(b.dataset.stock==='minus')item.qty=Math.max(0,item.qty-1);if(b.dataset.stock==='delete'){if(!confirm('Remove '+item.name+' from inventory?'))return;inventory=inventory.filter(x=>x.id!==item.id)}else lowAlert(item,previous);saveStock();renderInventory();render()};
 document.querySelector('#editInventoryForm').onsubmit=e=>{e.preventDefault();const item=inventory.find(x=>x.id===editingInventoryId);if(!item){closeInventoryEditor();return}const name=document.querySelector('#editInventoryName').value.trim(),qty=Math.max(0,Math.floor(+document.querySelector('#editInventoryQty').value||0)),tote=cleanTote(document.querySelector('#editInventoryTote').value),duplicate=inventory.find(x=>x.id!==item.id&&x.name.toLowerCase()===name.toLowerCase());if(duplicate){toast('That cologne is already in inventory');return}const previous=item.qty;item.name=name;item.qty=qty;item.tote=tote;saveStock();lowAlert(item,previous);closeInventoryEditor();renderInventory();render();toast('Inventory changes saved')};
 document.querySelector('#closeInventoryEdit').onclick=closeInventoryEditor;
@@ -208,3 +208,21 @@ updateOnlineStatus();
 renderInventory();
 render();
 
+
+function registerStockFragrance(rawName){
+  const name=String(rawName||'').trim();
+  if(!name)throw new Error('Enter a cologne name first.');
+  const key=normalizeName(name);
+  const catalogItem=data.find(item=>normalizeName(displayName(item))===key);
+  const stockItem=inventory.find(item=>normalizeName(item.name)===key);
+  const savedName=catalogItem?displayName(catalogItem):stockItem?.name||customNames.find(item=>normalizeName(item)===key)||name;
+  if(!catalogItem){
+    if(!customNames.some(item=>normalizeName(item)===key)){customNames.push(savedName);localStorage.setItem(CUSTOM_KEY,JSON.stringify(customNames));}
+    if(!pendingUpdates.some(item=>normalizeName(item.name)===key)){
+      pendingUpdates.push({name:savedName,inspiredBy:'Match not confirmed yet',notes:'',gender:'Unisex',status:'Needs verification',sourceId:'stock-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2),checkedAt:Date.now(),publishedAt:new Date().toISOString(),imported:false,addedFromStock:true});
+      savePending();
+    }
+    renderWhatsNew();
+  }
+  return savedName;
+}

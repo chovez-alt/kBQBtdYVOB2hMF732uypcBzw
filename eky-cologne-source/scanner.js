@@ -13,6 +13,7 @@
   }
   function renderChoices() {
     const term = $('barcodeCologne').value.trim().toLowerCase();
+    $('barcodeCreate').classList.toggle('hidden',!term||names().some(name=>name.toLowerCase()===term));
     $('barcodeChoices').innerHTML = names().filter(name => !term || name.toLowerCase().includes(term)).slice(0,60).map(name => '<button type="button" class="scanner-choice" data-name="'+esc(name)+'">'+esc(name)+'</button>').join('') || '<p>No cologne matches.</p>';
     $('barcodeChoices').classList.remove('hidden');
   }
@@ -22,6 +23,7 @@
     if(/^0\d{12}$/.test(code)&&map[code.slice(1)])code=code.slice(1);
     else if(/^\d{12}$/.test(code)&&map['0'+code])code='0'+code;
     selected = map[code]?.name || '';
+    $('barcodeCreate').classList.add('hidden');
     $('barcodeCode').textContent = code;
     $('barcodeCologne').value = selected;
     $('barcodeHint').textContent = selected ? 'Remembered as '+selected+'. Add or remove one bottle.' : 'First scan: pick the cologne this barcode belongs to.';
@@ -42,7 +44,7 @@
   }
   function apply(action) {
     if(busy || !code)return;
-    const name=chosen();if(!name){$('barcodeHint').textContent='Pick a cologne from the list first.';renderChoices();return;}
+    const name=chosen();if(!name){$('barcodeHint').textContent='Pick a cologne or use Create New Cologne.';renderChoices();return;}
     const existing=inventory.find(item=>normalizeName(item.name)===normalizeName(name));
     if(action==='out'&&(!existing||Number(existing.qty)<1)){
       try{map[code]={name,updatedAt:Date.now()};save();renderSaved();$('barcodeForget').classList.remove('hidden');$('barcodeHint').textContent='Barcode remembered as '+name+'. There is no stock to remove yet. Choose IN to add a bottle, or close this page.';}catch{$('barcodeHint').textContent='Could not save the barcode assignment. Please try again.';}
@@ -118,6 +120,23 @@
   $('barcodeCologne').oninput=()=>{selected='';renderChoices();};$('barcodeCologne').onfocus=renderChoices;
   $('barcodeChoices').onclick=e=>{const b=e.target.closest('[data-name]');if(b){selected=b.dataset.name;$('barcodeCologne').value=selected;$('barcodeChoices').classList.add('hidden');}};
   $('barcodeMappings').onclick=e=>{const b=e.target.closest('[data-code]');if(b)open(b.dataset.code);};
+  $('barcodeCreate').onclick=()=>{
+    const typed=$('barcodeCologne').value.trim();
+    if(!typed||!code){$('barcodeHint').textContent='Enter the new cologne name first.';return;}
+    const oldStock=JSON.stringify(inventory),oldNames=JSON.stringify(customNames),oldPending=JSON.stringify(pendingUpdates),oldMap=JSON.stringify(map);
+    try{
+      const name=registerStockFragrance(typed);
+      if(!inventory.some(item=>normalizeName(item.name)===normalizeName(name)))inventory.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2),name,qty:0,tote:''});
+      map[code]={name,updatedAt:Date.now()};saveStock();save();
+      $('barcodeCologne').value=name;$('barcodeChoices').classList.add('hidden');$('barcodeCreate').classList.add('hidden');$('barcodeForget').classList.remove('hidden');
+      $('barcodeHint').textContent=name+' created and assigned. Added to What’s New for Search ChatGPT. Choose IN STOCK to add a bottle.';
+      renderSaved();renderInventory();render();
+    }catch(error){
+      inventory=JSON.parse(oldStock);customNames=JSON.parse(oldNames);pendingUpdates=JSON.parse(oldPending);map=JSON.parse(oldMap);
+      try{saveStock();localStorage.setItem(CUSTOM_KEY,oldNames);savePending();save();}catch{}
+      renderWhatsNew();$('barcodeHint').textContent='Could not create this cologne. Please try again.';
+    }
+  };
   $('barcodeSaveAssignment').onclick=()=>{const name=chosen();if(!name){renderChoices();return;}try{map[code]={name,updatedAt:Date.now()};save();renderSaved();close();message('Barcode assignment saved.');}catch{$('barcodeHint').textContent='Could not save assignment.';}};
   $('barcodeForget').onclick=()=>{if(!confirm('Forget this barcode assignment?'))return;delete map[code];save();renderSaved();close();};
   document.querySelectorAll('.nav').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.tab!=='scannerTab')stop(false);else{wantsCamera=true;renderSaved();start();}}));
