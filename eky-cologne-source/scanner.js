@@ -2,7 +2,7 @@
   const $ = id => document.getElementById(id);
   const MAP = 'eky-cologne-barcode-map-v1', HISTORY = 'eky-cologne-barcode-history-v1';
   const read = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch { return fallback; } };
-  let map = read(MAP, {}), history = read(HISTORY, []), code = '', selected = '', scanner = null, starting = false, busy = false, running = false, paused = false, wantsCamera = true, generation = 0, resumeTimer = null, lastCode = '', lastScanAt = 0;
+  let map = read(MAP, {}), history = read(HISTORY, []), code = '', selected = '', scanner = null, starting = false, busy = false, running = false, paused = false, wantsCamera = true, generation = 0, resumeTimer = null, lastCode = '', lastScanAt = 0, cameraQueue = Promise.resolve();
   const names = () => allProductNames();
   const message = text => { $('scannerMessage').textContent = text; };
   const save = () => { localStorage.setItem(MAP, JSON.stringify(map)); localStorage.setItem(HISTORY, JSON.stringify(history)); };
@@ -17,7 +17,6 @@
     $('barcodeChoices').classList.remove('hidden');
   }
   function open(raw) {
-    if(running && !paused){try{scanner.pause();paused=true;}catch{}}
     code = String(raw || '').trim();
     if(!code || code.length>128){message('Enter a valid barcode.');return;}
     if(/^0\d{12}$/.test(code)&&map[code.slice(1)])code=code.slice(1);
@@ -33,12 +32,8 @@
   }
   function close() {
     $('barcodeAction').classList.add('hidden'); code=''; selected='';
-    clearTimeout(resumeTimer);
-    resumeTimer=setTimeout(()=>{
-      if(!wantsCamera||!active()||document.hidden||code)return;
-      if(scanner&&running&&paused){try{scanner.resume();paused=false;message('Scanning automatically — point at the next barcode.');}catch{stop(false).then(start);}}
-      else if(!scanner)start();
-    },1400);
+    message('Ready for the next bottle. Move the last barcode away, or tap Scan Same Barcode Again.');
+    if(wantsCamera)start();
   }
   function active(){return $('scannerTab').classList.contains('active');} 
   function chosen() {
@@ -70,40 +65,53 @@
       $('barcodeHint').textContent='Could not save. Free some device storage and try again.';
     } finally {busy=false;}
   }
-  async function stop(userStop=false) {
-    if(userStop)wantsCamera=false;
-    generation++;clearTimeout(resumeTimer);
-    const old=scanner;scanner=null;running=false;paused=false;
+  function enqueueCamera(task){cameraQueue=cameraQueue.then(task,task);return cameraQueue;}
+  async function releaseCamera(){
+    const old=scanner;scanner=null;running=false;
     if(old){try{await old.stop();}catch{}try{old.clear();}catch{}}
     $('scanStart').disabled=false;$('scanStart').textContent='Start Barcode Scanner';$('scanStop').classList.add('hidden');
-    if(userStop)message('Camera stopped. Tap Start to scan again.');
   }
-  async function start() {
-    if(starting||scanner||!wantsCamera||!active()||document.hidden||code)return;
-    starting=true;const ticket=++generation;$('scanStart').disabled=true;message('Opening rear camera…');
-    let reader;
-    try {
-      if(!window.Html5Qrcode)throw new Error('reader-unavailable');
-      const f=window.Html5QrcodeSupportedFormats;
-      reader=new Html5Qrcode('scannerCamera',{formatsToSupport:[f.EAN_13,f.EAN_8,f.UPC_A,f.UPC_E,f.CODE_128,f.CODE_39,f.ITF,f.CODABAR],verbose:false});
-      scanner=reader;
-      await reader.start({facingMode:'environment'},{fps:12,disableFlip:true},value=>{
-        if(ticket!==generation||code||paused||!active())return;
-        const now=Date.now();if(value===lastCode&&now-lastScanAt<2000)return;
-        lastCode=value;lastScanAt=now;open(value);message('Barcode found. Choose IN STOCK or OUT OF STOCK.');
-      },()=>{});
-      if(ticket!==generation||!wantsCamera||!active()||document.hidden){try{await reader.stop();reader.clear();}catch{}return;}
-      running=true;try{localStorage.setItem('eky-cologne-camera-allowed-v1','true');}catch{}$('scanStart').textContent='Camera scanning';$('scanStop').classList.remove('hidden');
-      message('Scanning automatically — point the camera at a barcode.');
-    } catch(error) {
-      if(ticket===generation){
-        await stop(false);
+  function stop(userStop=false){
+    if(userStop)wantsCamera=false;
+    generation++;
+    return enqueueCamera(async()=>{await releaseCamera();if(userStop)message('Camera stopped. Tap Start to scan again.');});
+  }
+  function start(){
+    return enqueueCamera(async()=>{
+      if(scanner||!wantsCamera||!active()||document.hidden||code)return;
+      starting=true;const ticket=++generation;$('scanStart').disabled=true;message('Opening rear camera…');
+      try{
+        if(!window.Html5Qrcode)throw new Error('reader-unavailable');
+        const f=window.Html5QrcodeSupportedFormats;
+        const reader=new Html5Qrcode('scannerCamera',{formatsToSupport:[f.EAN_13,f.EAN_8,f.UPC_A,f.UPC_E,f.CODE_128,f.CODE_39,f.ITF,f.CODABAR],verbose:false});
+        scanner=reader;
+        await reader.start({facingMode:'environment'},{fps:10,disableFlip:false,
+          qrbox:(width,height)=>({width:Math.floor(Math.min(width*.9,360)),height:Math.floor(Math.min(height*.8,220))})
+        },value=>{
+          if(ticket!==generation||!active()||document.hidden||!wantsCamera)return;
+          const now=Date.now();
+          if(value===lastCode){lastScanAt=now;return;}
+          if(code)return;
+          lastCode=value;lastScanAt=now;open(value);message('Barcode found. Choose a cologne, then IN or OUT.');
+        },()=>{
+          if(!code&&Date.now()-lastScanAt>1200)lastCode='';
+        });
+        if(ticket!==generation||!wantsCamera||!active()||document.hidden){await releaseCamera();return;}
+        running=true;try{localStorage.setItem('eky-cologne-camera-allowed-v1','true');}catch{}
+        $('scanStart').disabled=false;$('scanStart').textContent='Restart Camera';$('scanStop').classList.remove('hidden');
+        message('Scanning — keep the barcode inside the camera box.');
+        if(typeof reader.applyVideoConstraints==='function')reader.applyVideoConstraints({advanced:[{focusMode:'continuous'}]}).catch(()=>{});
+      }catch(error){
+        await releaseCamera();
+        if(ticket!==generation)return;
         const reason=String(error?.name||error||'');
-        message(reason.includes('reader-unavailable')?'Camera reader did not load. Tap Update App, then try again.':reason.includes('NotAllowed')||reason.includes('Permission')?'Camera permission is needed. Allow camera access, then tap Start Scanner.':reason.includes('NotFound')?'No camera found. Enter a barcode below.':'Camera could not open. Tap Start Scanner to retry, or enter a barcode below.');
-      }
-    } finally{starting=false;}
+        message(reason.includes('reader-unavailable')?'Camera reader did not load. Tap Update App and try again.':/NotAllowed|Permission|denied/i.test(reason)?'Allow camera access in your browser, then tap Start Barcode Scanner.':/NotFound/i.test(reason)?'No camera found. Enter the barcode below.':'Camera could not open. Tap Start Barcode Scanner to retry, or enter the number below.');
+      }finally{starting=false;}
+    });
   }
-  $('scanStart').onclick=()=>{wantsCamera=true;start();};$('scanStop').onclick=()=>stop(true);
+  $('scanStart').onclick=()=>{wantsCamera=true;stop(false).then(start);};
+  $('scanStop').onclick=()=>stop(true);
+  $('scanAgain').onclick=()=>{lastCode='';lastScanAt=0;wantsCamera=true;start();message('Ready to scan the same barcode again.');};
   $('manualBarcodeForm').onsubmit=e=>{e.preventDefault();const value=$('manualBarcode').value;open(value);$('manualBarcode').value='';};
   $('barcodeClose').onclick=close;$('barcodeAction').onclick=e=>{if(e.target===$('barcodeAction'))close();};
   $('barcodeIn').onclick=()=>apply('in');$('barcodeOut').onclick=()=>apply('out');
@@ -117,3 +125,4 @@
   renderSaved();
   start();
 })();
+

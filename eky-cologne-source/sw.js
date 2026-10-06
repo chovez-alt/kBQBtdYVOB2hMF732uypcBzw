@@ -1,4 +1,4 @@
-const CACHE='eky-cologne-v191-scanner-3';
+const CACHE='eky-cologne-v191-scanner-4';
 const APP_SHELL=['./','index.html','styles.css','app.js','scanner.js','barcode-reader.min.js','catalog.js','manifest.webmanifest','icon.svg'];
 
 self.addEventListener('install',event=>{
