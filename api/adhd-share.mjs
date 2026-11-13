@@ -51,9 +51,19 @@ export default async function handler(req, res) {
               !/^(?:[01]\d|2[0-3]):[0-5]\d$|^$/.test(item.time)) {
             return send(400, { error: 'Invalid reminder or list is full' });
           }
-          data.items.push({ id: item.id, text: item.text.trim(), date: item.date, time: item.time, done: false });
+          const kind = ['medicine', 'appointment'].includes(item.kind) ? item.kind : '';
+          const days = kind === 'medicine' && Array.isArray(item.days)
+            ? [...new Set(item.days.filter(day => Number.isInteger(day) && day >= 0 && day <= 6))].sort()
+            : [];
+          if (kind && !item.time) return send(400, { error: 'Choose a time' });
+          data.items.push({ id: item.id, text: item.text.trim(), date: item.date, time: item.time, kind, days, done: false });
         } else if (body.action === 'complete') {
-          if (existing) existing.done = item.done === true;
+          if (existing?.days?.length) {
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(item.date)) return send(400, { error: 'Invalid completion date' });
+            existing.completedDate = item.done === true ? item.date : null;
+          } else if (existing) {
+            existing.done = item.done === true;
+          }
         } else if (body.action === 'delete') {
           data.items = data.items.filter((entry) => entry.id !== item.id);
         } else {

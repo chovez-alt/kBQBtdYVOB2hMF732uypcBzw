@@ -43,7 +43,9 @@
 <p class="hint" id="shareStatus" role="status">Link another phone once to sync shared reminders.</p>
 <div id="sharedItems" class="list"></div>
 </div>
-<div class="card"><div class="sectionTitle"><h2>Add a reminder</h2></div><input class="input" id="reminderText" placeholder="What do you need to remember?"><div class="field"><label>Day</label><input class="input" type="date" id="reminderDate"></div><div class="field"><label>When</label><div class="seg"><button id="anytimeBtn" class="active">Anytime today</button><button id="timeBtn">Certain time</button></div></div><div class="field" id="timeField" style="display:none"><label>Time</label><input class="input" type="time" id="reminderTime"></div><div class="field" id="sharedChoice" hidden><label><input type="checkbox" id="saveShared"> Add to shared list</label></div><button class="primary" id="addReminder" style="width:100%">Save Reminder</button><p class="hint">For a dependable iPhone alert, use “Add to Calendar” after saving.</p></div>
+<div class="card"><div class="sectionTitle"><h2>Add a reminder</h2></div><div class="field"><label for="reminderKind">Type</label><select class="input" id="reminderKind"><option value="">Reminder</option><option value="appointment">Appointment</option><option value="medicine">Medicine</option></select></div>
+<fieldset id="repeatMedicine" hidden><legend>Repeat on these days</legend><div id="medicineDays"></div><p class="hint">Leave all days unchecked for a one-time reminder.</p></fieldset>
+<input class="input" id="reminderText" placeholder="What do you need to remember?"><div class="field"><label>Day</label><input class="input" type="date" id="reminderDate"></div><div class="field" id="reminderWhen"><label>When</label><div class="seg"><button id="anytimeBtn" class="active">Anytime today</button><button id="timeBtn">Certain time</button></div></div><div class="field" id="timeField" style="display:none"><label>Time</label><input class="input" type="time" id="reminderTime"></div><div class="field" id="sharedChoice" hidden><label><input type="checkbox" id="saveShared"> Add to shared list</label></div><button class="primary" id="addReminder" style="width:100%">Save Reminder</button><p class="hint">For a dependable iPhone alert, use “Add to Calendar” after saving.</p></div>
 <div class="card"><div class="sectionTitle"><h2>Reminders</h2><span class="count" id="reminderCount"></span></div><div class="list" id="reminderList"></div></div>
 </section>
 </main>
@@ -127,28 +129,65 @@ function renderCompleted(){
  document.querySelectorAll('[data-all-delete]').forEach(function(e){e.onclick=function(){if(!confirm('Delete this completed item?'))return;var p=e.dataset.allDelete.split(':');if(p[0]==='note'){notes=notes.filter(function(x){return x.id!==p[1]});save(KEYS.notes,notes);renderNotes()}else{tasks=tasks.filter(function(x){return x.id!==p[1]});save(KEYS.tasks,tasks)}renderTasks();renderCompleted()}});
 }
 
+const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const calendarDays = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
+const kindInput = document.getElementById('reminderKind');
+document.getElementById('medicineDays').innerHTML = weekdayNames.map((day, index) =>
+  '<label style="display:inline-block;margin:4px"><input type="checkbox" value="' + index + '"> ' + day + '</label>'
+).join('');
+kindInput.onchange = () => {
+  const kind = kindInput.value;
+  document.getElementById('repeatMedicine').hidden = kind !== 'medicine';
+  document.getElementById('reminderWhen').hidden = !!kind;
+  document.getElementById('reminderText').placeholder =
+    kind === 'medicine' ? 'Medicine name' : kind === 'appointment' ? 'Appointment name' : 'What do you need to remember?';
+  if (kind) document.getElementById('timeBtn').click();
+};
+
+function reminderLabel(r) {
+  return r.kind === 'medicine' ? 'Medicine · ' : r.kind === 'appointment' ? 'Appointment · ' : '';
+}
+
+function repeatLabel(r) {
+  return r.days?.length ? ' · Repeats ' + r.days.map(day => weekdayNames[day]).join(', ') : '';
+}
+
+function nextRepeatDate(r) {
+  const today = dateKey();
+  const date = new Date((today > r.date ? today : r.date) + 'T12:00:00');
+  while (!r.days.includes(date.getDay())) date.setDate(date.getDate() + 1);
+  return dateKey(date);
+}
+
+function reminderDone(r) {
+  return r.days?.length ? r.completedDate === dateKey() : !!r.done;
+}
+
 function renderReminders(){
  reminders.sort(function(a,b){return (a.date+(a.time||'23:59')).localeCompare(b.date+(b.time||'23:59'))});
- document.getElementById('reminderCount').textContent=reminders.length?reminders.filter(function(r){return !r.done}).length+' open':'';
- document.getElementById('reminderList').innerHTML=reminders.length?reminders.map(function(r){var when=new Date(r.date+'T12:00:00').toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'})+(r.time?' at '+formatTime(r.time):' · Anytime');return '<div class="item '+(r.done?'done':'')+'"><input aria-label="Mark reminder complete" class="check" type="checkbox" data-rem-check="'+r.id+'" '+(r.done?'checked':'')+'><div class="itemBody"><div class="itemText">'+esc(r.text)+'</div><div class="meta">'+esc(when)+'</div><div style="margin-top:9px"><button class="secondary" data-calendar="'+r.id+'">Add to Calendar</button></div></div><button aria-label="Delete reminder" class="iconBtn danger" data-delete-rem="'+r.id+'">×</button></div>'}).join(''):'<div class="empty">No reminders saved.</div>';
- document.querySelectorAll('[data-rem-check]').forEach(function(e){e.onchange=function(){var r=reminders.find(function(x){return x.id===e.dataset.remCheck});if(r)r.done=e.checked;save(KEYS.reminders,reminders);renderReminders()}});
+ document.getElementById('reminderCount').textContent=reminders.length?reminders.filter(function(r){return !reminderDone(r)}).length+' open':'';
+ document.getElementById('reminderList').innerHTML=reminders.length?reminders.map(function(r){var when=new Date(r.date+'T12:00:00').toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'})+(r.time?' at '+formatTime(r.time):' · Anytime');return '<div class="item '+(reminderDone(r)?'done':'')+'"><input aria-label="Mark reminder complete" class="check" type="checkbox" data-rem-check="'+r.id+'" '+(reminderDone(r)?'checked':'')+'><div class="itemBody"><div class="itemText">'+esc(reminderLabel(r)+r.text)+'</div><div class="meta">'+esc(when+repeatLabel(r))+'</div><div style="margin-top:9px"><button class="secondary" data-calendar="'+r.id+'">Add to Calendar</button></div></div><button aria-label="Delete reminder" class="iconBtn danger" data-delete-rem="'+r.id+'">×</button></div>'}).join(''):'<div class="empty">No reminders saved.</div>';
+ document.querySelectorAll('[data-rem-check]').forEach(function(e){e.onchange=function(){var r=reminders.find(function(x){return x.id===e.dataset.remCheck});if(r){if(r.days?.length)r.completedDate=e.checked?dateKey():null;else r.done=e.checked;}save(KEYS.reminders,reminders);renderReminders()}});
  document.querySelectorAll('[data-delete-rem]').forEach(function(e){e.onclick=function(){if(confirm('Delete this reminder?')){reminders=reminders.filter(function(x){return x.id!==e.dataset.deleteRem});save(KEYS.reminders,reminders);renderReminders()}}});
  document.querySelectorAll('[data-calendar]').forEach(function(e){e.onclick=function(){var r=reminders.find(function(x){return x.id===e.dataset.calendar});if(r)calendar(r)}});
 }
 function formatTime(t){var p=t.split(':'),d=new Date();d.setHours(+p[0],+p[1]);return d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}
 document.getElementById('anytimeBtn').onclick=function(){reminderTimed=false;this.classList.add('active');document.getElementById('timeBtn').classList.remove('active');document.getElementById('timeField').style.display='none'};
 document.getElementById('timeBtn').onclick=function(){reminderTimed=true;this.classList.add('active');document.getElementById('anytimeBtn').classList.remove('active');document.getElementById('timeField').style.display='block'};
-document.getElementById('addReminder').onclick=async function(){var text=document.getElementById('reminderText').value.trim(),date=document.getElementById('reminderDate').value,time=reminderTimed?document.getElementById('reminderTime').value:'';if(!text){toast('Say what to remember');return}if(!date){toast('Choose a day');return}if(reminderTimed&&!time){toast('Choose a time');return}if (shared && document.getElementById('saveShared').checked) {
+document.getElementById('addReminder').onclick=async function(){var text=document.getElementById('reminderText').value.trim(),date=document.getElementById('reminderDate').value,time=reminderTimed?document.getElementById('reminderTime').value:'';if(!text){toast('Say what to remember');return}if(!date){toast('Choose a day');return}if(reminderTimed&&!time){toast('Choose a time');return}const kind = kindInput.value;
+const days = kind === 'medicine' ? Array.from(document.querySelectorAll('#medicineDays input:checked'), input => Number(input.value)) : [];
+const details = {text, date, time, kind, days};
+if (shared && document.getElementById('saveShared').checked) {
   this.disabled = true;
   try {
-    await sharedRequest('add', { item: { id: crypto.randomUUID(), text, date, time } });
+    await sharedRequest('add', { item: { id: crypto.randomUUID(), ...details } });
     document.getElementById('reminderText').value = '';
     toast('Added to both phones');
   } catch (error) { shareStatus.textContent = error.message; }
   finally { this.disabled = false; }
   return;
 }
-reminders.push({id:id(),text:text,date:date,time:time,done:false,notified:false});save(KEYS.reminders,reminders);document.getElementById('reminderText').value='';renderReminders();toast('Reminder saved')};
+reminders.push({id:id(),...details,done:false,notified:false});save(KEYS.reminders,reminders);document.getElementById('reminderText').value='';renderReminders();toast('Reminder saved')};
 const shareStatus = document.getElementById('shareStatus');
 const shareButton = document.getElementById('shareList');
 const sharedItems = document.getElementById('sharedItems');
@@ -161,21 +200,27 @@ function renderShared(items) {
   sharedItems.replaceChildren();
   for (const item of items) {
     const row = document.createElement('div');
-    row.className = 'item' + (item.done ? ' done' : '');
+    row.className = 'item' + (reminderDone(item) ? ' done' : '');
     const check = document.createElement('input');
     check.type = 'checkbox';
     check.className = 'check';
-    check.checked = item.done;
+    check.checked = reminderDone(item);
     check.setAttribute('aria-label', 'Mark shared reminder complete');
     check.onchange = async () => {
       check.disabled = true;
-      try { await sharedRequest('complete', { item: { id: item.id, done: check.checked } }); }
-      catch (error) { check.checked = item.done; shareStatus.textContent = error.message; }
+      try { await sharedRequest('complete', { item: { id: item.id, done: check.checked, date: dateKey() } }); }
+      catch (error) { check.checked = reminderDone(item); shareStatus.textContent = error.message; }
       finally { check.disabled = false; }
     };
     const label = document.createElement('div');
     label.className = 'itemBody';
-    label.textContent = item.text + ' · ' + item.date + (item.time ? ' at ' + formatTime(item.time) : '');
+    label.textContent = reminderLabel(item) + item.text + ' · ' + item.date +
+      (item.time ? ' at ' + formatTime(item.time) : '') + repeatLabel(item);
+    const calendarButton = document.createElement('button');
+    calendarButton.className = 'secondary';
+    calendarButton.textContent = 'Add to Calendar';
+    calendarButton.onclick = () => calendar(item);
+    label.append(document.createElement('br'), calendarButton);
     const remove = document.createElement('button');
     remove.className = 'iconBtn danger';
     remove.textContent = '×';
@@ -280,9 +325,52 @@ setInterval(refreshShared, 10000);
 window.addEventListener('online', refreshShared);
 document.addEventListener('visibilitychange', refreshShared);
 
-function calendar(r){var start=(r.date.replaceAll('-','')+'T'+(r.time?r.time.replace(':','')+'00':'090000'));var end=(r.date.replaceAll('-','')+'T'+(r.time?addHour(r.time):'093000'));var body='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//ADHD Daily Reminders//EN\r\nBEGIN:VEVENT\r\nUID:'+r.id+'@adhd-reminders\r\nDTSTART:'+start+'\r\nDTEND:'+end+'\r\nSUMMARY:'+r.text.replace(/[\n,;]/g,' ')+'\r\nBEGIN:VALARM\r\nTRIGGER:-PT10M\r\nACTION:DISPLAY\r\nDESCRIPTION:Reminder\r\nEND:VALARM\r\nEND:VEVENT\r\nEND:VCALENDAR';var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([body],{type:'text/calendar'}));a.download='reminder.ics';a.click();setTimeout(function(){URL.revokeObjectURL(a.href)},1000);toast('Open the download to add it')}
-function addHour(t){var p=t.split(':'),m=(+p[0]*60+(+p[1])+60)%(24*60);return String(Math.floor(m/60)).padStart(2,'0')+String(m%60).padStart(2,'0')+'00'}
-function checkDue(){var now=new Date();reminders.forEach(function(r){if(r.done||r.notified||!r.time)return;var due=new Date(r.date+'T'+r.time);if(now>=due&&now-due<3600000){r.notified=true;toast('Reminder: '+r.text);if('Notification'in window&&Notification.permission==='granted')new Notification('ADHD Daily Reminders',{body:r.text,icon:'./icon.svg'})}});save(KEYS.reminders,reminders)}
+function calendar(r) {
+  const startDate = r.days?.length ? nextRepeatDate(r) : r.date;
+  const start = new Date(startDate + 'T' + (r.time || '09:00'));
+  const end = new Date(start.getTime() + 30 * 60000);
+  const stamp = date => dateKey(date).replaceAll('-', '') + 'T' +
+    String(date.getHours()).padStart(2, '0') + String(date.getMinutes()).padStart(2, '0') + '00';
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//ADHD Daily Reminders//EN',
+    'BEGIN:VEVENT', 'UID:' + r.id + '@adhd-reminders',
+    'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z'),
+    'DTSTART:' + stamp(start), 'DTEND:' + stamp(end),
+    'SUMMARY:' + (reminderLabel(r) + r.text).replace(/[\n,;]/g, ' ')];
+  if (r.days?.length) lines.push('RRULE:FREQ=WEEKLY;BYDAY=' + r.days.map(day => calendarDays[day]).join(','));
+  lines.push('BEGIN:VALARM', 'TRIGGER:' + (r.kind === 'medicine' ? 'PT0S' : '-PT10M'),
+    'ACTION:DISPLAY', 'DESCRIPTION:Reminder', 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR');
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob([lines.join('\r\n') + '\r\n'], { type: 'text/calendar' }));
+  link.download = 'reminder.ics';
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+  toast('Open the download to add it');
+}
+
+function checkDue() {
+  const now = new Date();
+  const today = dateKey(now);
+  let changed = false;
+  reminders.forEach(r => {
+    if (reminderDone(r) || !r.time) return;
+    const repeats = r.days?.length;
+    if (repeats && (today < r.date || !r.days.includes(now.getDay()) || r.notifiedDate === today)) return;
+    if (!repeats && r.notified) return;
+    const due = new Date((repeats ? today : r.date) + 'T' + r.time);
+    if (now >= due && now - due < 3600000) {
+      if (repeats) r.notifiedDate = today;
+      else r.notified = true;
+      changed = true;
+      toast('Reminder: ' + r.text);
+      try {
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification('ADHD Daily Reminders', { body: r.text, icon: './icon.svg' });
+        }
+      } catch {}
+    }
+  });
+  if (changed) save(KEYS.reminders, reminders);
+}
 setInterval(checkDue,30000);checkDue();
 
 var Speech=window.SpeechRecognition||window.webkitSpeechRecognition;
