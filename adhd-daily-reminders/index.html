@@ -458,9 +458,8 @@ function renderCalendar() {
     button.setAttribute('aria-pressed', String(key === calendarSelected));
     if (key === today) button.setAttribute('aria-current', 'date');
     button.setAttribute('aria-label', date.toLocaleDateString([], {month:'long',day:'numeric'}) + ', ' + items.length + ' items');
-    const categories = new Set(items.map(item => item.category));
     button.innerHTML = day + '<span class="calendarMarks" aria-hidden="true">' +
-      [...categories].map(category => '<i class="calendarDot" data-category="' + esc(category) + '"></i>').join('') + '</span>';
+      items.map(item => '<i class="calendarDot" data-category="' + esc(item.category) + '"></i>').join('') + '</span>';
     button.onclick = () => {
       calendarSelected = key;
       renderCalendar();
