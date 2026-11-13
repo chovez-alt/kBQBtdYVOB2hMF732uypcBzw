@@ -12,14 +12,23 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon.svg">
 <style>
-:root{--bg:#071426;--surface:#0d2039;--surface2:#123052;--blue:#2d7dff;--mint:#62e2c2;--text:#f7fbff;--muted:#a8bad1;--danger:#ff6b7a;--line:#244362;--shadow:0 14px 38px rgba(0,0,0,.28)}*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;min-height:100vh;background:radial-gradient(circle at 20% 0,#123c66 0,transparent 38%),var(--bg);color:var(--text);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:env(safe-area-inset-top) 0 calc(84px + env(safe-area-inset-bottom));-webkit-tap-highlight-color:transparent}button,input,textarea,select{font:inherit}button{cursor:pointer}.app{max-width:760px;margin:auto;padding:18px 16px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 0 18px}.top h1{font-size:1.35rem;margin:0;line-height:1.15}.update{border:1px solid #4173a4;background:#102b49;color:#dcecff;border-radius:14px;padding:10px 13px;font-weight:750;min-height:44px}.date{color:var(--muted);font-size:.92rem;margin-top:4px}.card{background:linear-gradient(145deg,rgba(18,48,82,.96),rgba(11,29,51,.98));border:1px solid var(--line);border-radius:22px;padding:17px;margin-bottom:14px;box-shadow:var(--shadow)}.focus{border-color:#3278c3}.eyebrow{color:var(--mint);font-weight:800;font-size:.78rem;letter-spacing:.09em;text-transform:uppercase}.focusText{font-size:1.18rem;font-weight:800;margin:7px 0 2px}.progress{height:8px;background:#071426;border-radius:8px;margin-top:13px;overflow:hidden}.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--mint));width:0}.voice{display:block;width:100%;border:0;background:linear-gradient(135deg,#176bf2,#3b8cff);color:white;border-radius:20px;padding:19px 16px;font-size:1.15rem;font-weight:850;box-shadow:0 11px 25px rgba(22,107,242,.35)}.voice.listening{background:linear-gradient(135deg,#e24b61,#ff7587);animation:pulse 1.2s infinite}@keyframes pulse{50%{transform:scale(.985)}}.hint{color:var(--muted);font-size:.9rem;text-align:center;margin:9px 0 0}.row{display:flex;gap:9px}.row>*:first-child{flex:1}.input,textarea,select{width:100%;background:#081a2d;border:1px solid #315275;color:var(--text);border-radius:14px;padding:13px 14px;min-height:48px}.input:focus,textarea:focus,select:focus{outline:3px solid rgba(45,125,255,.3);border-color:#63a0ff}.primary{border:0;background:var(--blue);color:#fff;border-radius:14px;padding:12px 16px;font-weight:800;min-height:48px}.secondary{border:1px solid #3a638c;background:#102944;color:#eaf4ff;border-radius:12px;padding:10px 13px;font-weight:750}.danger{color:#ff9fab}.sectionTitle{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.sectionTitle h2{font-size:1.08rem;margin:0}.count{color:var(--muted);font-size:.9rem}.list{display:grid;gap:9px}.item{display:flex;align-items:flex-start;gap:11px;background:rgba(6,20,36,.64);border:1px solid #254561;border-radius:16px;padding:13px}.item.done{opacity:.56}.item.done .itemText{text-decoration:line-through}.check{appearance:none;width:25px;height:25px;min-width:25px;border:2px solid #5f82a5;border-radius:8px;margin:1px 0 0;background:#08192a}.check:checked{background:var(--mint);border-color:var(--mint);box-shadow:inset 0 0 0 5px #123052}.itemBody{flex:1;min-width:0}.itemText{font-weight:700;overflow-wrap:anywhere}.meta{color:var(--muted);font-size:.84rem;margin-top:3px}.iconBtn{border:0;background:transparent;color:#b7cae0;padding:3px 5px;font-size:1.15rem}.empty{color:var(--muted);text-align:center;padding:20px 8px}.tabs{position:fixed;z-index:10;left:0;right:0;bottom:0;background:rgba(5,17,31,.96);backdrop-filter:blur(18px);border-top:1px solid #213f5d;padding:8px 8px calc(8px + env(safe-area-inset-bottom));display:flex;justify-content:center}.tabInner{width:min(760px,100%);display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.tab{border:0;background:transparent;color:#8fa8c2;border-radius:13px;padding:8px 4px;font-size:.76rem;font-weight:750}.tab span{display:block;font-size:1.3rem;line-height:1.2;margin-bottom:2px}.tab.active{background:#123052;color:white}.panel{display:none}.panel.active{display:block}.modal{position:fixed;z-index:30;inset:0;background:rgba(2,10,19,.78);display:none;align-items:flex-end;justify-content:center}.modal.show{display:flex}.sheet{width:min(760px,100%);max-height:88vh;overflow:auto;background:#0d2039;border:1px solid #315375;border-radius:24px 24px 0 0;padding:20px 17px calc(20px + env(safe-area-inset-bottom))}.sheet h2{margin:0 0 14px}.sheetActions{display:flex;gap:9px;margin-top:12px}.sheetActions>*{flex:1}.field{margin:10px 0}.field label{display:block;color:#bfd0e2;font-weight:700;margin-bottom:6px}.scheduleGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.typeTag{display:inline-block;color:var(--mint);font-size:.72rem;font-weight:850;letter-spacing:.05em;text-transform:uppercase;margin-bottom:3px}@media(max-width:420px){.scheduleGrid{grid-template-columns:1fr}}.seg{display:grid;grid-template-columns:1fr 1fr;gap:7px}.seg button{border:1px solid #355979;background:#0a1c30;color:#bcd0e4;border-radius:12px;padding:11px}.seg button.active{background:#1f6fe5;color:white;border-color:#4c91f3}.toast{position:fixed;z-index:40;left:50%;bottom:100px;transform:translateX(-50%) translateY(20px);opacity:0;background:#eef7ff;color:#092039;border-radius:13px;padding:11px 15px;font-weight:750;box-shadow:var(--shadow);transition:.25s;pointer-events:none;white-space:nowrap;max-width:90vw}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}@media(min-width:680px){.app{padding-top:30px}.top h1{font-size:1.65rem}.card{padding:21px}.modal{align-items:center}.sheet{border-radius:24px;margin:20px}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+:root{--bg:#071426;--surface:#0d2039;--surface2:#123052;--blue:#2d7dff;--mint:#62e2c2;--text:#f7fbff;--muted:#a8bad1;--danger:#ff6b7a;--line:#244362;--shadow:0 14px 38px rgba(0,0,0,.28)}*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;min-height:100vh;background:radial-gradient(circle at 20% 0,#123c66 0,transparent 38%),var(--bg);color:var(--text);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:env(safe-area-inset-top) 0 calc(84px + env(safe-area-inset-bottom));-webkit-tap-highlight-color:transparent}button,input,textarea,select{font:inherit}button{cursor:pointer}.app{max-width:760px;margin:auto;padding:18px 16px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 0 18px}.top h1{font-size:1.35rem;margin:0;line-height:1.15}.update{border:1px solid #4173a4;background:#102b49;color:#dcecff;border-radius:14px;padding:10px 13px;font-weight:750;min-height:44px}.date{color:var(--muted);font-size:.92rem;margin-top:4px}.card{background:linear-gradient(145deg,rgba(18,48,82,.96),rgba(11,29,51,.98));border:1px solid var(--line);border-radius:22px;padding:17px;margin-bottom:14px;box-shadow:var(--shadow)}.focus{border-color:#3278c3}.eyebrow{color:var(--mint);font-weight:800;font-size:.78rem;letter-spacing:.09em;text-transform:uppercase}.focusText{font-size:1.18rem;font-weight:800;margin:7px 0 2px}.progress{height:8px;background:#071426;border-radius:8px;margin-top:13px;overflow:hidden}.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--mint));width:0}.voice{display:block;width:100%;border:0;background:linear-gradient(135deg,#176bf2,#3b8cff);color:white;border-radius:20px;padding:19px 16px;font-size:1.15rem;font-weight:850;box-shadow:0 11px 25px rgba(22,107,242,.35)}.voice.listening{background:linear-gradient(135deg,#e24b61,#ff7587);animation:pulse 1.2s infinite}@keyframes pulse{50%{transform:scale(.985)}}.hint{color:var(--muted);font-size:.9rem;text-align:center;margin:9px 0 0}.row{display:flex;gap:9px}.row>*:first-child{flex:1}.input,textarea,select{width:100%;background:#081a2d;border:1px solid #315275;color:var(--text);border-radius:14px;padding:13px 14px;min-height:48px}.input:focus,textarea:focus,select:focus{outline:3px solid rgba(45,125,255,.3);border-color:#63a0ff}.primary{border:0;background:var(--blue);color:#fff;border-radius:14px;padding:12px 16px;font-weight:800;min-height:48px}.secondary{border:1px solid #3a638c;background:#102944;color:#eaf4ff;border-radius:12px;padding:10px 13px;font-weight:750}.danger{color:#ff9fab}.sectionTitle{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.sectionTitle h2{font-size:1.08rem;margin:0}.count{color:var(--muted);font-size:.9rem}.list{display:grid;gap:9px}.item{display:flex;align-items:flex-start;gap:11px;background:rgba(6,20,36,.64);border:1px solid #254561;border-radius:16px;padding:13px}.item.done{opacity:.56}.item.done .itemText{text-decoration:line-through}.check{appearance:none;width:25px;height:25px;min-width:25px;border:2px solid #5f82a5;border-radius:8px;margin:1px 0 0;background:#08192a}.check:checked{background:var(--mint);border-color:var(--mint);box-shadow:inset 0 0 0 5px #123052}.itemBody{flex:1;min-width:0}.itemText{font-weight:700;overflow-wrap:anywhere}.meta{color:var(--muted);font-size:.84rem;margin-top:3px}.iconBtn{border:0;background:transparent;color:#b7cae0;padding:3px 5px;font-size:1.15rem}.empty{color:var(--muted);text-align:center;padding:20px 8px}.tabs{position:fixed;z-index:10;left:0;right:0;bottom:0;background:rgba(5,17,31,.96);backdrop-filter:blur(18px);border-top:1px solid #213f5d;padding:8px 8px calc(8px + env(safe-area-inset-bottom));display:flex;justify-content:center}.tabInner{width:min(760px,100%);display:grid;grid-template-columns:repeat(5,1fr);gap:5px}.tab{border:0;background:transparent;color:#8fa8c2;border-radius:13px;padding:8px 4px;font-size:.76rem;font-weight:750}.tab span{display:block;font-size:1.3rem;line-height:1.2;margin-bottom:2px}.tab.active{background:#123052;color:white}.panel{display:none}.panel.active{display:block}.modal{position:fixed;z-index:30;inset:0;background:rgba(2,10,19,.78);display:none;align-items:flex-end;justify-content:center}.modal.show{display:flex}.sheet{width:min(760px,100%);max-height:88vh;overflow:auto;background:#0d2039;border:1px solid #315375;border-radius:24px 24px 0 0;padding:20px 17px calc(20px + env(safe-area-inset-bottom))}.sheet h2{margin:0 0 14px}.sheetActions{display:flex;gap:9px;margin-top:12px}.sheetActions>*{flex:1}.field{margin:10px 0}.field label{display:block;color:#bfd0e2;font-weight:700;margin-bottom:6px}.scheduleGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.typeTag{display:inline-block;color:var(--mint);font-size:.72rem;font-weight:850;letter-spacing:.05em;text-transform:uppercase;margin-bottom:3px}@media(max-width:420px){.scheduleGrid{grid-template-columns:1fr}}.seg{display:grid;grid-template-columns:1fr 1fr;gap:7px}.seg button{border:1px solid #355979;background:#0a1c30;color:#bcd0e4;border-radius:12px;padding:11px}.seg button.active{background:#1f6fe5;color:white;border-color:#4c91f3}.toast{position:fixed;z-index:40;left:50%;bottom:100px;transform:translateX(-50%) translateY(20px);opacity:0;background:#eef7ff;color:#092039;border-radius:13px;padding:11px 15px;font-weight:750;box-shadow:var(--shadow);transition:.25s;pointer-events:none;white-space:nowrap;max-width:90vw}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}@media(min-width:680px){.app{padding-top:30px}.top h1{font-size:1.65rem}.card{padding:21px}.modal{align-items:center}.sheet{border-radius:24px;margin:20px}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.calendarGrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;text-align:center}.calendarDay{min-width:0;min-height:43px;background:#081a2d;border:1px solid #315275;border-radius:8px;color:var(--text);padding:3px}.calendarDay[aria-pressed=true]{outline:2px solid var(--blue);outline-offset:-2px}.calendarDay[aria-current=date]{font-weight:850}.calendarMarks{display:flex;justify-content:center;flex-wrap:wrap;gap:2px;min-height:7px}.calendarDot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--item-color)}.calendarLegend{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:12px}.calendarLegend span{white-space:nowrap}.calendarEvent{border-left:4px solid var(--item-color);overflow-wrap:anywhere}.calendarEvent .typeTag{color:var(--item-color)}[data-category=medicine]{--item-color:#ff7884}[data-category=appointment]{--item-color:#78adff}[data-category=task]{--item-color:#62e2a1}[data-category=note]{--item-color:#cea3ff}[data-category=reminder]{--item-color:#ffcc71}
 </style>
 </head>
 <body>
 <main class="app">
 <header class="top"><div><h1>ADHD Daily Reminders</h1><div class="date" id="todayDate"></div></div><button class="update" id="updateBtn">↻ Update App</button></header>
 
-<section class="panel active" id="todayPanel">
+<section class="panel active" id="homePanel">
+<div class="card">
+<div class="sectionTitle"><button class="secondary" id="prevMonth" aria-label="Previous month">‹</button><h2 id="calendarMonth" aria-live="polite"></h2><button class="secondary" id="nextMonth" aria-label="Next month">›</button></div>
+<div class="calendarGrid" id="calendarGrid"></div>
+<div class="calendarLegend" id="calendarLegend"></div>
+</div>
+<div class="card"><div class="sectionTitle"><h2 id="calendarDate"></h2><button class="secondary" id="calendarToday">Today</button></div><div class="list" id="calendarEvents"></div></div>
+</section>
+<section class="panel" id="todayPanel">
 <div class="card" style="padding-top:12px;padding-bottom:12px"><div class="field" style="margin:0"><label>Show my list for</label><div class="row"><input class="input" type="date" id="viewDate"><button class="secondary" id="goToday">Today</button></div></div></div>
 <div class="card focus"><div class="eyebrow">What matters now?</div><div class="focusText" id="focusText">Add your first task for today.</div><div class="meta" id="progressText">0 of 0 complete</div><div class="progress"><i id="progressBar"></i></div></div>
 <div class="card"><button class="voice" data-voice-target="task">🎙️ Tap and say a task</button><p class="hint">I’ll write it down and add it to today.</p><p class="hint" data-mic-status aria-live="polite"></p></div>
@@ -51,7 +60,8 @@
 </main>
 
 <nav class="tabs"><div class="tabInner">
-<button class="tab active" data-panel="todayPanel"><span>✓</span>Today</button>
+<button class="tab active" data-panel="homePanel"><span>⌂</span>Home</button>
+<button class="tab" data-panel="todayPanel"><span>✓</span>Today</button>
 <button class="tab" data-panel="notesPanel"><span>📝</span>Notes</button>
 <button class="tab" data-panel="completedPanel"><span>↩</span>Completed</button>
 <button class="tab" data-panel="remindersPanel"><span>🔔</span>Reminders</button>
@@ -66,7 +76,7 @@
 var KEYS={tasks:'adhd_tasks_v1',notes:'adhd_notes_v1',reminders:'adhd_reminders_v1'};
 var tasks=load(KEYS.tasks),notes=load(KEYS.notes),reminders=load(KEYS.reminders),editingId=null,reminderTimed=false,selectedDay=null;
 function load(k){try{return JSON.parse(localStorage.getItem(k)||'[]')}catch(e){return[]}}
-function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function save(k,v){localStorage.setItem(k,JSON.stringify(v));if(k===KEYS.tasks||k===KEYS.notes||k===KEYS.reminders)queueCalendar()}
 function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]})}
 function dateKey(d){var x=d||new Date();return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')}
@@ -195,8 +205,11 @@ const sharedStorage = 'adhd_shared_reminders_v1';
 const inviteStorage = 'adhd_pending_invite_v1';
 let shared = load(sharedStorage).list ? load(sharedStorage) : null;
 let syncQueue = Promise.resolve();
+let calendarShared = [];
 
 function renderShared(items) {
+  calendarShared = items;
+  queueCalendar();
   sharedItems.replaceChildren();
   for (const item of items) {
     const row = document.createElement('div');
@@ -399,6 +412,88 @@ document.querySelectorAll('[data-voice-target]').forEach(function(btn){
 });
 document.getElementById('updateBtn').onclick=async function(){var b=this;b.textContent='Updating…';try{if('serviceWorker'in navigator){var regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.map(function(r){return r.update()}))}var names=await caches.keys();await Promise.all(names.map(function(n){return caches.delete(n)}));toast('App updated');setTimeout(function(){location.href=location.pathname+'?updated='+Date.now()},500)}catch(e){location.reload()}};
 if('serviceWorker'in navigator)window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js')});
+const categoryLabels = {medicine:'Medicine', appointment:'Appointment', task:'Task', note:'Note', reminder:'Reminder'};
+
+let calendarSelected = dateKey();
+let calendarMonth = new Date(calendarSelected + 'T12:00:00');
+let calendarQueued = false;
+document.getElementById('calendarLegend').innerHTML = Object.entries(categoryLabels).map(([category,label]) =>
+  '<span data-category="' + category + '"><i class="calendarDot" aria-hidden="true"></i> ' + label + '</span>'
+).join('');
+
+function queueCalendar() {
+  queueMicrotask(() => {
+    if (calendarQueued) return;
+    calendarQueued = true;
+    requestAnimationFrame(() => { calendarQueued = false; renderCalendar(); });
+  });
+}
+
+function renderCalendar() {
+  const entries = [
+    ...tasks.map(item => ({...item, category:'task'})),
+    ...notes.map(item => ({...item, category:'note'})),
+    ...reminders.map(item => ({...item, category:item.kind || 'reminder'})),
+    ...calendarShared.map(item => ({...item, category:item.kind || 'reminder', shared:true}))
+  ];
+  const today = dateKey();
+  const year = calendarMonth.getFullYear();
+  const month = calendarMonth.getMonth();
+  const first = new Date(year,month,1).getDay();
+  const last = new Date(year,month+1,0).getDate();
+  const grid = document.getElementById('calendarGrid');
+  document.getElementById('calendarMonth').textContent = calendarMonth.toLocaleDateString([], {month:'long',year:'numeric'});
+  grid.innerHTML = weekdayNames.map(day => '<span class="meta">' + day + '</span>').join('') + '<span></span>'.repeat(first);
+
+  const entriesOn = (date, key) => entries.filter(item => item.days?.length
+    ? key >= item.date && item.days.includes(date.getDay())
+    : item.date === key);
+  for (let day = 1; day <= last; day++) {
+    const date = new Date(year,month,day,12);
+    const key = dateKey(date);
+    const items = entriesOn(date,key);
+    const button = document.createElement('button');
+    button.className = 'calendarDay';
+    button.dataset.date = key;
+    button.setAttribute('aria-pressed', String(key === calendarSelected));
+    if (key === today) button.setAttribute('aria-current', 'date');
+    button.setAttribute('aria-label', date.toLocaleDateString([], {month:'long',day:'numeric'}) + ', ' + items.length + ' items');
+    const categories = new Set(items.map(item => item.category));
+    button.innerHTML = day + '<span class="calendarMarks" aria-hidden="true">' +
+      [...categories].map(category => '<i class="calendarDot" data-category="' + esc(category) + '"></i>').join('') + '</span>';
+    button.onclick = () => {
+      calendarSelected = key;
+      renderCalendar();
+      grid.querySelector('[data-date="' + key + '"]').focus();
+    };
+    grid.append(button);
+  }
+
+  const selectedDate = new Date(calendarSelected + 'T12:00:00');
+  document.getElementById('calendarDate').textContent = selectedDate.toLocaleDateString([], {weekday:'short',month:'short',day:'numeric'});
+  const selected = entriesOn(selectedDate,calendarSelected).sort((a,b) => (a.time || '99:99').localeCompare(b.time || '99:99'));
+  document.getElementById('calendarEvents').innerHTML = selected.map(item => {
+    const done = item.days?.length ? item.completedDate === calendarSelected : item.done;
+    return '<div class="item calendarEvent' + (done ? ' done' : '') + '" data-category="' + esc(item.category) +
+      '"><div class="itemBody"><div class="typeTag">' + esc(categoryLabels[item.category] || 'Reminder') +
+      (item.shared ? ' · Shared' : '') + '</div><div class="itemText">' + esc(item.text) +
+      '</div><div class="meta">' + esc((item.time ? formatTime(item.time) : 'Anytime') + (done ? ' · Completed' : '')) + '</div></div></div>';
+  }).join('') || '<div class="empty">Nothing scheduled for this date.</div>';
+}
+
+function moveMonth(offset) {
+  calendarMonth = new Date(calendarMonth.getFullYear(),calendarMonth.getMonth()+offset,1,12);
+  calendarSelected = dateKey(calendarMonth);
+  renderCalendar();
+}
+document.getElementById('prevMonth').onclick = () => moveMonth(-1);
+document.getElementById('nextMonth').onclick = () => moveMonth(1);
+document.getElementById('calendarToday').onclick = () => {
+  calendarSelected = dateKey();
+  calendarMonth = new Date(calendarSelected + 'T12:00:00');
+  renderCalendar();
+};
+renderCalendar();
 renderTasks();renderNotes();renderCompleted();renderReminders();
 })();
 </script>
